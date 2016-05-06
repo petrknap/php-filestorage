@@ -1,16 +1,17 @@
 <?php
 
-namespace PetrKnap\Php\Test\FileStorage;
+namespace PetrKnap\Php\FileStorage\Test;
 
-use PetrKnap\Php\FileStorage\File;
+use PetrKnap\Php\FileStorage\AbstractFile;
 use PetrKnap\Php\FileStorage\FileException;
+use PetrKnap\Php\FileStorage\Test\AbstractFileTest\TestFile;
 
-class FileTest extends \PHPUnit_Framework_TestCase
+class AbstractFileTest extends \PHPUnit_Framework_TestCase
 {
     const TEST_FILE = "/test.file";
 
     /**
-     * @var File
+     * @var AbstractFile
      */
     private $file;
 
@@ -27,7 +28,7 @@ class FileTest extends \PHPUnit_Framework_TestCase
 
         unlink($this->pathToStorageDirectory);
 
-        FileTestMock::setStorageDirectory($this->pathToStorageDirectory);
+        TestFile::setStorageDirectory($this->pathToStorageDirectory);
     }
 
     public function __destruct()
@@ -39,7 +40,7 @@ class FileTest extends \PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->file = new FileTestMock(self::TEST_FILE);
+        $this->file = new TestFile(self::TEST_FILE);
 
         if ($this->file->exists()) {
             $this->file->delete();
@@ -177,28 +178,5 @@ class FileTest extends \PHPUnit_Framework_TestCase
         $avg = $sum / $count;
 
         $this->assertLessThanOrEqual(250, $avg);
-    }
-}
-
-class FileTestMock extends File
-{
-    static private $storageDirectory;
-
-    protected function getStorageDirectory()
-    {
-        if(!self::$storageDirectory) {
-            throw new \Exception("Unknown storage directory.");
-        }
-        return self::$storageDirectory;
-    }
-
-    public static function setStorageDirectory($pathToDirectory)
-    {
-        self::$storageDirectory = $pathToDirectory;
-    }
-
-    public static function getClassName()
-    {
-        return __CLASS__;
     }
 }

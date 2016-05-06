@@ -11,7 +11,7 @@ namespace PetrKnap\Php\FileStorage;
  * @package  PetrKnap\Php\FileStorage
  * @license  https://github.com/petrknap/php-filestorage/blob/master/LICENSE MIT
  */
-abstract class File
+abstract class AbstractFile
 {
     /**
      * @var string
