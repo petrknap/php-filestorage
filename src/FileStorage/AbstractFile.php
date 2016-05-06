@@ -96,14 +96,13 @@ abstract class AbstractFile
     /**
      * Throws exception if file does not exist
      *
-     * @throws FileException if file does not exist
+     * @throws FileNotFoundException if file does not exist
      */
     private function checkIfFileExists()
     {
         if (!$this->exists()) {
-            throw new FileException(
-                "File {$this->pathToFile} stored as {$this->realPathToFile} not found.",
-                FileException::FileNotFoundException
+            throw new FileNotFoundException(
+                "File {$this->pathToFile} stored as {$this->realPathToFile} not found."
             );
         }
     }
@@ -113,14 +112,13 @@ abstract class AbstractFile
      *
      * @return $this
      *
-     * @throws FileException if can not create
+     * @throws FileExistsException|FileAccessException if can not create
      */
     public function create()
     {
         if ($this->exists()) {
-            throw new FileException(
-                "File {$this->pathToFile} stored as {$this->realPathToFile} exists.",
-                FileException::FileExistsException
+            throw new FileExistsException(
+                "File {$this->pathToFile} stored as {$this->realPathToFile} exists."
             );
         }
 
@@ -132,9 +130,8 @@ abstract class AbstractFile
         $return = touch($this->realPathToFile);
 
         if ($return === false) {
-            throw new FileException(
-                "Couldn't create {$this->pathToFile} stored as {$this->realPathToFile}.",
-                FileException::AccessException
+            throw new FileAccessException(
+                "Couldn't create {$this->pathToFile} stored as {$this->realPathToFile}."
             );
         }
 
@@ -146,7 +143,7 @@ abstract class AbstractFile
      *
      * @return mixed
      *
-     * @throws FileException if can not read
+     * @throws FileAccessException if can not read
      */
     public function read()
     {
@@ -155,25 +152,22 @@ abstract class AbstractFile
         $file = fopen($this->realPathToFile, "rb");
 
         if($file === false) {
-            throw new FileException(
-                "Couldn't open file {$this->pathToFile} stored as {$this->realPathToFile} for read.",
-                FileException::AccessException
+            throw new FileAccessException(
+                "Couldn't open file {$this->pathToFile} stored as {$this->realPathToFile} for read."
             );
         }
 
         $return = stream_get_contents($file);
 
         if(fclose($file) === false) {
-            throw new FileException(
-                "Couldn't close file {$this->pathToFile} stored as {$this->realPathToFile}.",
-                FileException::AccessException
+            throw new FileAccessException(
+                "Couldn't close file {$this->pathToFile} stored as {$this->realPathToFile}."
             );
         }
 
         if ($return === false) {
-            throw new FileException(
-                "Couldn't read from {$this->pathToFile} stored as {$this->realPathToFile}.",
-                FileException::AccessException
+            throw new FileAccessException(
+                "Couldn't read from {$this->pathToFile} stored as {$this->realPathToFile}."
             );
         }
 
@@ -187,7 +181,7 @@ abstract class AbstractFile
      * @param int|bool $append true or FILE_APPEND for appending file instead of overwriting
      * @return $this
      *
-     * @throws FileException if can not write
+     * @throws FileAccessException if can not write
      */
     public function write($data, $append = false)
     {
@@ -198,25 +192,22 @@ abstract class AbstractFile
         $file = fopen($this->realPathToFile, $append ? "ab": "wb");
 
         if($file === false) {
-            throw new FileException(
-                "Couldn't open file {$this->pathToFile} stored as {$this->realPathToFile} for write.",
-                FileException::AccessException
+            throw new FileAccessException(
+                "Couldn't open file {$this->pathToFile} stored as {$this->realPathToFile} for write."
             );
         }
 
         $return = fwrite($file, $data);
 
         if(fclose($file) === false) {
-            throw new FileException(
-                "Couldn't close file {$this->pathToFile} stored as {$this->realPathToFile}.",
-                FileException::AccessException
+            throw new FileAccessException(
+                "Couldn't close file {$this->pathToFile} stored as {$this->realPathToFile}."
             );
         }
 
         if ($return === false) {
-            throw new FileException(
-                "Couldn't write to {$this->pathToFile} stored as {$this->realPathToFile}.",
-                FileException::AccessException
+            throw new FileAccessException(
+                "Couldn't write to {$this->pathToFile} stored as {$this->realPathToFile}."
             );
         }
 
@@ -229,7 +220,7 @@ abstract class AbstractFile
      * @param resource $context a valid context resource created with stream_context_create
      * @return $this
      *
-     * @throws FileException if can not clear
+     * @throws FileAccessException if can not clear
      */
     public function clear($context = null)
     {
@@ -241,16 +232,15 @@ abstract class AbstractFile
      *
      * @return $this
      *
-     * @throws FileException if can not delete
+     * @throws FileNotFoundException|FileAccessException if can not delete
      */
     public function delete()
     {
         $this->checkIfFileExists();
 
         if(!@unlink($this->realPathToFile)) {
-            throw new FileException(
-                "Couldn't delete {$this->pathToFile} stored as {$this->realPathToFile}.",
-                FileException::AccessException
+            throw new FileAccessException(
+                "Couldn't delete {$this->pathToFile} stored as {$this->realPathToFile}."
             );
         }
 

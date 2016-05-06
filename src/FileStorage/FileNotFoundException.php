@@ -2,7 +2,7 @@
 
 namespace PetrKnap\Php\FileStorage;
 
-class FileException extends \Exception
+class FileNotFoundException extends FileException
 {
     // Empty class
 }
