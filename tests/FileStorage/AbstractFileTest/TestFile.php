@@ -10,7 +10,7 @@ class TestFile extends AbstractFile
 
     protected function getStorageDirectory()
     {
-        if(!self::$storageDirectory) {
+        if (!self::$storageDirectory) {
             throw new \Exception("Unknown storage directory.");
         }
         return self::$storageDirectory;

@@ -54,6 +54,11 @@ abstract class AbstractFile
         return $this->pathToFile;
     }
 
+    /**
+     * Returns path to storage directory
+     *
+     * @return string
+     */
     abstract protected function getStorageDirectory();
 
     /**
@@ -77,7 +82,7 @@ abstract class AbstractFile
 
         $realPath = "{$this->getStorageDirectory()}";
 
-        foreach($dirs as $dir) {
+        foreach ($dirs as $dir) {
             $realPath = "{$realPath}/{$dir}";
         }
         $realPath = "{$realPath}/{$fileName}";
@@ -123,7 +128,7 @@ abstract class AbstractFile
         }
 
         $path = dirname($this->realPathToFile);
-        if(!file_exists($path)) {
+        if (!file_exists($path)) {
             @mkdir($path, 0744, true);
         }
 
@@ -151,7 +156,7 @@ abstract class AbstractFile
 
         $file = fopen($this->realPathToFile, "rb");
 
-        if($file === false) {
+        if ($file === false) {
             throw new FileAccessException(
                 "Couldn't open file {$this->pathToFile} stored as {$this->realPathToFile} for read."
             );
@@ -159,7 +164,7 @@ abstract class AbstractFile
 
         $return = stream_get_contents($file);
 
-        if(fclose($file) === false) {
+        if (fclose($file) === false) {
             throw new FileAccessException(
                 "Couldn't close file {$this->pathToFile} stored as {$this->realPathToFile}."
             );
@@ -189,9 +194,9 @@ abstract class AbstractFile
 
         $append = ($append === true || $append === FILE_APPEND);
 
-        $file = fopen($this->realPathToFile, $append ? "ab": "wb");
+        $file = fopen($this->realPathToFile, $append ? "ab" : "wb");
 
-        if($file === false) {
+        if ($file === false) {
             throw new FileAccessException(
                 "Couldn't open file {$this->pathToFile} stored as {$this->realPathToFile} for write."
             );
@@ -199,7 +204,7 @@ abstract class AbstractFile
 
         $return = fwrite($file, $data);
 
-        if(fclose($file) === false) {
+        if (fclose($file) === false) {
             throw new FileAccessException(
                 "Couldn't close file {$this->pathToFile} stored as {$this->realPathToFile}."
             );
@@ -238,7 +243,7 @@ abstract class AbstractFile
     {
         $this->checkIfFileExists();
 
-        if(!@unlink($this->realPathToFile)) {
+        if (!@unlink($this->realPathToFile)) {
             throw new FileAccessException(
                 "Couldn't delete {$this->pathToFile} stored as {$this->realPathToFile}."
             );
