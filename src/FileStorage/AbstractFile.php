@@ -71,14 +71,14 @@ abstract class AbstractFile
     {
         $sha1 = sha1($pathToFile);
         $md5 = md5($pathToFile);
-        $ext = explode(".", $pathToFile);
-        $ext = array_pop($ext);
+        $lastDotPosition = strrpos($pathToFile, ".");
+        $ext = $lastDotPosition === false ? "" : substr($pathToFile, $lastDotPosition);
 
         $dirs = str_split($sha1, 2);
 
         $sha1Prefix = array_pop($dirs);
 
-        $fileName = "{$sha1Prefix}-{$md5}.{$ext}";
+        $fileName = "{$sha1Prefix}-{$md5}{$ext}";
 
         $realPath = "{$this->getStorageDirectory()}";
 
