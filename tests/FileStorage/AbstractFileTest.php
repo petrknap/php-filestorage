@@ -4,6 +4,8 @@ namespace PetrKnap\Php\FileStorage\Test;
 
 use PetrKnap\Php\FileStorage\AbstractFile;
 use PetrKnap\Php\FileStorage\FileException;
+use PetrKnap\Php\FileStorage\FileExistsException;
+use PetrKnap\Php\FileStorage\FileNotFoundException;
 use PetrKnap\Php\FileStorage\Test\AbstractFileTest\TestFile;
 
 class AbstractFileTest extends \PHPUnit_Framework_TestCase
@@ -33,7 +35,7 @@ class AbstractFileTest extends \PHPUnit_Framework_TestCase
 
     public function __destruct()
     {
-        if(file_exists($this->pathToStorageDirectory)) {
+        if (file_exists($this->pathToStorageDirectory)) {
             exec("rm {$this->pathToStorageDirectory} -fr");
         }
     }
@@ -58,9 +60,8 @@ class AbstractFileTest extends \PHPUnit_Framework_TestCase
         try {
             $this->file->create();
             $this->fail("Can create existing file.");
-        }
-        catch(FileException $fe) {
-            $this->assertEquals(FileException::FileExistsException, $fe->getCode());
+        } catch (FileException $fe) {
+            $this->assertInstanceOf(FileExistsException::class, $fe);
         }
     }
 
@@ -69,9 +70,8 @@ class AbstractFileTest extends \PHPUnit_Framework_TestCase
         try {
             $this->file->read();
             $this->fail("Can read from nothing.");
-        }
-        catch (FileException $fe) {
-            $this->assertEquals(FileException::FileNotFoundException, $fe->getCode());
+        } catch (FileException $fe) {
+            $this->assertInstanceOf(FileNotFoundException::class, $fe);
         }
 
         $this->file->create();
@@ -86,9 +86,8 @@ class AbstractFileTest extends \PHPUnit_Framework_TestCase
         try {
             $this->file->write($data);
             $this->fail("Can write to nothing.");
-        }
-        catch (FileException $fe) {
-            $this->assertEquals(FileException::FileNotFoundException, $fe->getCode());
+        } catch (FileException $fe) {
+            $this->assertInstanceOf(FileNotFoundException::class, $fe);
         }
 
         $this->file->create();
@@ -103,9 +102,8 @@ class AbstractFileTest extends \PHPUnit_Framework_TestCase
         try {
             $this->file->clear();
             $this->fail("Can clear nothing.");
-        }
-        catch (FileException $fe) {
-            $this->assertEquals(FileException::FileNotFoundException, $fe->getCode());
+        } catch (FileException $fe) {
+            $this->assertInstanceOf(FileNotFoundException::class, $fe);
         }
 
         $this->file->create();
@@ -122,9 +120,8 @@ class AbstractFileTest extends \PHPUnit_Framework_TestCase
         try {
             $this->file->delete();
             $this->fail("Can delete nothing.");
-        }
-        catch (FileException $fe) {
-            $this->assertEquals(FileException::FileNotFoundException, $fe->getCode());
+        } catch (FileException $fe) {
+            $this->assertInstanceOf(FileNotFoundException::class, $fe);
         }
 
         $this->file->create();
@@ -142,7 +139,7 @@ class AbstractFileTest extends \PHPUnit_Framework_TestCase
 
         $times = array();
 
-        for($i = 0; $i < 100; $i++) {
+        for ($i = 0; $i < 100; $i++) {
             $begin = microtime(true);
 
             $this->file->create();
@@ -171,7 +168,7 @@ class AbstractFileTest extends \PHPUnit_Framework_TestCase
         $sum = 0;
         $count = count($times);
 
-        foreach($times as $time) {
+        foreach ($times as $time) {
             $sum += $time;
         }
 
