@@ -24,19 +24,29 @@ class PerformanceTest extends AbstractTestCase
 
         // Build storage
         for ($i = $from; $i < $to; $i++) {
-            SimpleProfiler::start();
-
             $file = $this->getFile();
             if ($file->exists()) {
                 $file->delete();
             }
+
+            // Create file
+            SimpleProfiler::start();
             $file->create();
+            $profile = SimpleProfiler::finish();
+            $this->assertLessThanOrEqual(1, $profile->absoluteDuration);
+
+            // Write content
+            SimpleProfiler::start();
             $file->write(sha1($i, true));
             $file->write(md5($i, true), FILE_APPEND);
-            $file->read();
-
             $profile = SimpleProfiler::finish();
-            $this->assertLessThanOrEqual(250, $profile->absoluteDuration);
+            $this->assertLessThanOrEqual(10, $profile->absoluteDuration);
+
+            // Read content
+            SimpleProfiler::start();
+            $file->read();
+            $profile = SimpleProfiler::finish();
+            $this->assertLessThanOrEqual(5, $profile->absoluteDuration);
         }
 
         if (!$profilerWasEnabled) {
