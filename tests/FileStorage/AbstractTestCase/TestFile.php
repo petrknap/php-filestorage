@@ -1,6 +1,6 @@
 <?php
 
-namespace PetrKnap\Php\FileStorage\Test\AbstractFileTest;
+namespace PetrKnap\Php\FileStorage\Test\AbstractTestCase;
 
 use PetrKnap\Php\FileStorage\AbstractFile;
 

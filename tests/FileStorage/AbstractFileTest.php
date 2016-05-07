@@ -2,178 +2,141 @@
 
 namespace PetrKnap\Php\FileStorage\Test;
 
-use PetrKnap\Php\FileStorage\AbstractFile;
-use PetrKnap\Php\FileStorage\FileException;
 use PetrKnap\Php\FileStorage\FileExistsException;
 use PetrKnap\Php\FileStorage\FileNotFoundException;
-use PetrKnap\Php\FileStorage\Test\AbstractFileTest\TestFile;
+use PetrKnap\Php\FileStorage\Test\AbstractTestCase\TestFile;
+use PetrKnap\Php\Profiler\SimpleProfiler;
 
-class AbstractFileTest extends \PHPUnit_Framework_TestCase
+class AbstractFileTest extends AbstractTestCase
 {
-    const TEST_FILE = "/test.file";
-
-    /**
-     * @var AbstractFile
-     */
-    private $file;
-
     /**
      * @var string
      */
     private $pathToStorageDirectory;
 
-    public function __construct()
+    public function setUp()
     {
-        parent::__construct();
+        parent::setUp();
 
-        $this->pathToStorageDirectory = tempnam(__DIR__, __CLASS__);
-
-        unlink($this->pathToStorageDirectory);
+        $this->pathToStorageDirectory = $this->getTemporaryDirectory();
 
         TestFile::setStorageDirectory($this->pathToStorageDirectory);
     }
 
-    public function __destruct()
+    private function getFile($id)
     {
-        if (file_exists($this->pathToStorageDirectory)) {
-            exec("rm {$this->pathToStorageDirectory} -fr");
-        }
-    }
-
-    public function setUp()
-    {
-        $this->file = new TestFile(self::TEST_FILE);
-
-        if ($this->file->exists()) {
-            $this->file->delete();
-        }
+        return new TestFile("/{$id}.file");
     }
 
     public function testCanCreateNewFile()
     {
-        $this->assertFalse($this->file->exists());
+        $this->getFile(1)->create();
+        $this->assertTrue($this->getFile(1)->exists());
 
-        $this->file->create();
-
-        $this->assertTrue($this->file->exists());
-
-        try {
-            $this->file->create();
-            $this->fail("Can create existing file.");
-        } catch (FileException $fe) {
-            $this->assertInstanceOf(FileExistsException::class, $fe);
-        }
-    }
-
-    public function testCanReadFromFile()
-    {
-        try {
-            $this->file->read();
-            $this->fail("Can read from nothing.");
-        } catch (FileException $fe) {
-            $this->assertInstanceOf(FileNotFoundException::class, $fe);
-        }
-
-        $this->file->create();
-
-        $this->assertEmpty($this->file->read());
-    }
-
-    public function testCanWriteToFile()
-    {
-        $data = __METHOD__;
-
-        try {
-            $this->file->write($data);
-            $this->fail("Can write to nothing.");
-        } catch (FileException $fe) {
-            $this->assertInstanceOf(FileNotFoundException::class, $fe);
-        }
-
-        $this->file->create();
-
-        $this->file->write($data);
-
-        $this->assertEquals($data, $this->file->read());
-    }
-
-    public function testCanClearFile()
-    {
-        try {
-            $this->file->clear();
-            $this->fail("Can clear nothing.");
-        } catch (FileException $fe) {
-            $this->assertInstanceOf(FileNotFoundException::class, $fe);
-        }
-
-        $this->file->create();
-
-        $this->file->write(__METHOD__);
-
-        $this->file->clear();
-
-        $this->assertEmpty($this->file->read());
+        $this->setExpectedException(FileExistsException::class);
+        $this->getFile(1)->create();
     }
 
     public function testCanDeleteFile()
     {
-        try {
-            $this->file->delete();
-            $this->fail("Can delete nothing.");
-        } catch (FileException $fe) {
-            $this->assertInstanceOf(FileNotFoundException::class, $fe);
-        }
+        $this->getFile(1)->create();
+        $this->getFile(1)->delete();
+        $this->assertFalse($this->getFile(1)->exists());
 
-        $this->file->create();
-
-        $this->assertTrue($this->file->exists());
-
-        $this->file->delete();
-
-        $this->assertFalse($this->file->exists());
+        $this->setExpectedException(FileNotFoundException::class);
+        $this->getFile(2)->delete();
     }
 
-    public function testPerformanceCheck()
+    public function testCanReadFromFile()
     {
-        $data = __METHOD__;
+        $content = __METHOD__;
 
-        $times = array();
+        $this->getFile(1)->create();
+        file_put_contents($this->getFile(1)->getRealPathToFile(), $content);
+        $this->assertEquals($content, $this->getFile(1)->read());
 
-        for ($i = 0; $i < 100; $i++) {
-            $begin = microtime(true);
+        $this->setExpectedException(FileNotFoundException::class);
+        $this->getFile(2)->delete();
+        $this->getFile(2)->read();
+    }
 
-            $this->file->create();
+    public function testCanWriteToFile()
+    {
+        $content = __METHOD__;
 
-            $this->file->write($data);
+        $this->getFile(1)->create();
+        $this->getFile(1)->write($content);
+        $this->assertEquals($content, file_get_contents($this->getFile(1)->getRealPathToFile()));
+        $this->getFile(1)->write($content, true);
+        $this->assertEquals($content . $content, file_get_contents($this->getFile(1)->getRealPathToFile()));
 
-            $this->assertEquals($data, $this->file->read());
+        $this->setExpectedException(FileNotFoundException::class);
+        $this->getFile(2)->delete();
+        $this->getFile(2)->write($content);
+    }
 
-            $this->file->write($data, FILE_APPEND);
+    public function testCanClearFile()
+    {
+        $content = __METHOD__;
 
-            $this->assertEquals($data . $data, $this->file->read());
+        $this->getFile(1)->create();
+        $this->getFile(1)->write($content);
+        $this->getFile(1)->clear();
+        $this->assertEmpty($this->getFile(1)->read());
 
-            $this->file->clear();
+        $this->setExpectedException(FileNotFoundException::class);
+        $this->getFile(2)->delete();
+        $this->getFile(2)->clear();
+    }
 
-            $this->assertEmpty($this->file->read());
+    /**
+     * @dataProvider performanceIsNotIntrusiveDataProvider
+     * @param string $directory
+     * @param int $from
+     * @param int $to
+     */
+    public function testPerformanceIsNotIntrusive($directory, $from, $to)
+    {
+        TestFile::setStorageDirectory($directory);
 
-            $this->file->delete();
-
-            $this->assertFalse($this->file->exists());
-
-            $end = microtime(true);
-
-            array_push($times, intval(round(($end - $begin) * 1000)));
+        $profilerWasEnabled = SimpleProfiler::start();
+        if(!$profilerWasEnabled) {
+            SimpleProfiler::enable();
         }
 
-        $sum = 0;
-        $count = count($times);
+        for ($i = $from; $i < $to; $i++) {
+            SimpleProfiler::start();
 
-        foreach ($times as $time) {
-            $sum += $time;
+            $file = $this->getFile($i);
+            if ($file->exists()) {
+                $file->delete();
+            }
+            $file->create();
+            $file->write(sha1($i, true));
+            $file->write(md5($i, true), FILE_APPEND);
+            $file->read();
+
+            $profile = SimpleProfiler::finish();
+            $this->assertLessThanOrEqual(250, $profile->absoluteDuration);
         }
 
-        $avg = $sum / $count;
+        if ($profilerWasEnabled) {
+            SimpleProfiler::disable();
+        }
+        SimpleProfiler::finish();
+    }
 
-        $this->assertLessThanOrEqual(250, $avg);
+    public function performanceIsNotIntrusiveDataProvider()
+    {
+        srand(1462607969);
+        $iMax = 16384;
+        $step = 128;
+        $output = [];
+        $directory = $this->getTemporaryDirectory();
+        for ($i = 0; $i < $iMax; $i += $step)
+        {
+            $output[] = [$directory, $i, $i + $step + rand(0, 16)];
+        }
+        return $output;
     }
 }
