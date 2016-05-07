@@ -2,6 +2,8 @@
 
 namespace PetrKnap\Php\FileStorage\Test;
 
+use PetrKnap\Php\FileStorage\Test\AbstractTestCase\TestFile;
+
 abstract class AbstractTestCase extends \PHPUnit_Framework_TestCase
 {
     /**
@@ -13,6 +15,11 @@ abstract class AbstractTestCase extends \PHPUnit_Framework_TestCase
      * @var string
      */
     private static $tempPrefix;
+
+    /**
+     * @var int
+     */
+    private $countOfKnownFiles = 0;
 
     /**
      * @param string $tempDir
@@ -76,6 +83,13 @@ abstract class AbstractTestCase extends \PHPUnit_Framework_TestCase
         self::removeDirectory(self::$tempDir);
 
         parent::tearDownAfterClass();
+    }
+
+    protected function getFile()
+    {
+        $this->countOfKnownFiles++;
+
+        return new TestFile("/{$this->countOfKnownFiles}.file");
     }
 }
 

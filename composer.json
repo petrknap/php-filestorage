@@ -23,7 +23,7 @@
   },
   "scripts": {
     "test": [
-      "./vendor/bin/phpunit"
+      "./vendor/bin/phpunit --testsuite main"
     ],
     "post-autoload-dump": [
       "@test"
