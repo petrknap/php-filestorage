@@ -222,14 +222,13 @@ abstract class AbstractFile
     /**
      * Clears file
      *
-     * @param resource $context a valid context resource created with stream_context_create
      * @return $this
      *
      * @throws FileAccessException if can not clear
      */
-    public function clear($context = null)
+    public function clear()
     {
-        return $this->write(null, null, $context);
+        return $this->write(null);
     }
 
     /**
