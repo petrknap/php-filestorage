@@ -73,7 +73,6 @@ abstract class AbstractTestCase extends \PHPUnit_Framework_TestCase
                 escapeshellcmd(__DIR__ . "/AbstractTestCase/empty_directory/"),
                 escapeshellcmd($directory . "/")
             );
-            fwrite(STDOUT, PHP_EOL . $cmd);
             exec($cmd);
         }
     }
