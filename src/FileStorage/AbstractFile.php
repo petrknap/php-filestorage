@@ -13,6 +13,13 @@ namespace PetrKnap\Php\FileStorage;
  */
 abstract class AbstractFile
 {
+    #region TODO move me to FileManager
+    /**
+     * @var string
+     */
+    private static $indexFileName = "index.json";
+    #endregion
+
     /**
      * @var string
      */
@@ -140,6 +147,22 @@ abstract class AbstractFile
             );
         }
 
+        #region TODO move me to FileManager
+        $pathToIndex = dirname($this->realPathToFile) . "/" . self::$indexFileName;
+
+        if (file_exists($pathToIndex)) {
+            $index = json_decode(file_get_contents($pathToIndex), true);
+        } else {
+            $index = [];
+        }
+        $indexedFile = &$index["files"][basename($this->realPathToFile)];
+        $indexedFile = [
+            "pathToFile" => $this->getPathToFile()
+        ];
+
+        file_put_contents($pathToIndex, json_encode($index));
+        #endregion
+
         return $this;
     }
 
@@ -248,6 +271,35 @@ abstract class AbstractFile
             );
         }
 
+        #region TODO move me to FileManager
+        $pathToIndex = dirname($this->realPathToFile) . "/" . self::$indexFileName;
+
+        if (file_exists($pathToIndex)) {
+            $index = json_decode(file_get_contents($pathToIndex), true);
+        } else {
+            $index = [];
+        }
+        unset($index["files"][basename($this->realPathToFile)]);
+
+        file_put_contents($pathToIndex, json_encode($index));
+        #endregion
+
         return $this;
     }
+
+    #region TODO move me to FileManager
+    public function getFiles()
+    {
+        $directoryIterator = new \RecursiveDirectoryIterator($this->getStorageDirectory());
+        $itemIterator = new \RecursiveIteratorIterator($directoryIterator);
+        foreach ($itemIterator as $item) {
+            if ($item->isFile() && $item->getBaseName() == self::$indexFileName) {
+                $index = json_decode(file_get_contents($item->getRealPath()), true);
+                foreach($index["files"] as $file => $metaData) {
+                    yield new static($metaData["pathToFile"]);
+                }
+            }
+        }
+    }
+    #endregion
 }

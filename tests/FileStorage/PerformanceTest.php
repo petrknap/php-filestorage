@@ -22,32 +22,41 @@ class PerformanceTest extends AbstractTestCase
             SimpleProfiler::enable();
         }
 
-        // Build storage
+        #region Build storage
         for ($i = $from; $i < $to; $i++) {
             $file = $this->getFile();
-            if ($file->exists()) {
-                $file->delete();
-            }
 
-            // Create file
+            #region Create file
             SimpleProfiler::start();
             $file->create();
             $profile = SimpleProfiler::finish();
-            $this->assertLessThanOrEqual(1, $profile->absoluteDuration);
+            $this->assertLessThanOrEqual(5, $profile->absoluteDuration);
+            #endregion
 
-            // Write content
+            #region Write content
             SimpleProfiler::start();
             $file->write(sha1($i, true));
             $file->write(md5($i, true), FILE_APPEND);
             $profile = SimpleProfiler::finish();
             $this->assertLessThanOrEqual(10, $profile->absoluteDuration);
+            #endregion
 
-            // Read content
+            #region Read content
             SimpleProfiler::start();
             $file->read();
             $profile = SimpleProfiler::finish();
             $this->assertLessThanOrEqual(5, $profile->absoluteDuration);
+            #endregion
         }
+        #endregion
+
+        #region Iterate all files
+        SimpleProfiler::start();
+        /** @noinspection PhpUnusedLocalVariableInspection */
+        foreach($this->getFile()->getFiles() as $unused);
+        $profile = SimpleProfiler::finish();
+        $this->assertLessThanOrEqual(5 * $to, $profile->absoluteDuration);
+        #endregion
 
         if (!$profilerWasEnabled) {
             SimpleProfiler::disable();
@@ -57,14 +66,13 @@ class PerformanceTest extends AbstractTestCase
 
     public function performanceIsNotIntrusiveDataProvider()
     {
-        srand(1462607969);
         $iMax = 16384;
         $step = 128;
         $output = [];
         $directory = $this->getTemporaryDirectory();
         for ($i = 0; $i < $iMax; $i += $step)
         {
-            $output[] = [$directory, $i, $i + $step + rand(0, 16)];
+            $output[] = [$directory, $i, $i + $step];
         }
         return $output;
     }
