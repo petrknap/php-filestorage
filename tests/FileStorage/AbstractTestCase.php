@@ -19,7 +19,7 @@ abstract class AbstractTestCase extends \PHPUnit_Framework_TestCase
     /**
      * @var int
      */
-    private $countOfKnownFiles = 0;
+    private static $countOfKnownFiles = 0;
 
     /**
      * @param string $tempDir
@@ -57,24 +57,23 @@ abstract class AbstractTestCase extends \PHPUnit_Framework_TestCase
         return $temporaryDirectory;
     }
 
-    private static function removeDirectory($directory, $deep = 0)
+    private static function removeDirectory($directory)
     {
         $directoryIterator = new \DirectoryIterator($directory);
         $itemIterator = new \IteratorIterator($directoryIterator);
         foreach ($itemIterator as $item) {
-            if ($item->isDir() && !$item->isDot()) {
-                self::removeDirectory($item->getRealPath(), $deep + 1);
+            if ($item->isDir() && preg_match('|^' . self::$tempPrefix . '|', $item->getBaseName())) {
+                $cmd = sprintf(
+                    "rsync -a --delete %s %s; rm -rf %s",
+                    escapeshellcmd(__DIR__ . "/AbstractTestCase/empty_directory/"),
+                    escapeshellcmd($item->getRealPath() . "/"),
+                    escapeshellcmd($item->getRealPath() . "/")
+                );
+                fwrite(STDERR, PHP_EOL . $cmd);
+                exec($cmd);
             }
         }
-
-        if ($deep % 10 == 0) {
-            $cmd = sprintf(
-                "rsync -a --delete %s %s",
-                escapeshellcmd(__DIR__ . "/AbstractTestCase/empty_directory/"),
-                escapeshellcmd($directory . "/")
-            );
-            exec($cmd);
-        }
+        fwrite(STDERR, PHP_EOL);
     }
 
     public static function tearDownAfterClass()
@@ -86,9 +85,9 @@ abstract class AbstractTestCase extends \PHPUnit_Framework_TestCase
 
     protected function getFile()
     {
-        $this->countOfKnownFiles++;
+        self::$countOfKnownFiles++;
 
-        return new TestFile("/{$this->countOfKnownFiles}.file");
+        return new TestFile("/" . self::$countOfKnownFiles . ".file");
     }
 }
 
