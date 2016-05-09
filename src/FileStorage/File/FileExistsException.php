@@ -1,6 +1,6 @@
 <?php
 
-namespace PetrKnap\Php\FileStorage;
+namespace PetrKnap\Php\FileStorage\File;
 
 class FileExistsException extends FileException
 {
