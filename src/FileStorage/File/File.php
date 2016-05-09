@@ -24,7 +24,6 @@ class File implements FileInterface
      */
     private $realPathToFile;
 
-
     /**
      * @var StorageManagerInterface
      */
