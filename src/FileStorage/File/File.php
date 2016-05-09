@@ -67,9 +67,9 @@ class File implements FileInterface
             throw new FileExistsException("File {$this} exists.");
         }
 
-        $path = dirname($this->realPathToFile);
-        if (!file_exists($path)) {
-            @mkdir($path, 0744, true);
+        $dirName = dirname($this->realPathToFile);
+        if (!file_exists($dirName)) {
+            @mkdir($dirName, $this->storageManager->getStoragePermissions(), true);
         }
 
         $return = touch($this->realPathToFile);
