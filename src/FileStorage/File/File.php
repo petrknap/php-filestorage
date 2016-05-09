@@ -80,13 +80,19 @@ class File implements FileInterface
 
         $dirName = dirname($this->realPathToFile);
         if (!file_exists($dirName)) {
-            @mkdir($dirName, $this->storageManager->getStoragePermissions(), true);
+            @mkdir($dirName, $this->storageManager->getStoragePermissions() + 0111, true);
         }
 
         $return = touch($this->realPathToFile);
 
         if ($return === false) {
             throw new FileAccessException("Couldn't create file {$this}.");
+        }
+
+        $return = chmod($this->realPathToFile, $this->storageManager->getStoragePermissions());
+
+        if ($return === false) {
+            throw new FileAccessException("Couldn't change permissions on file {$this}.");
         }
 
         $this->storageManager->assignFile($this);

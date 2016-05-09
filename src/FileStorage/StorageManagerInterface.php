@@ -19,6 +19,10 @@ interface StorageManagerInterface
     public function getPathToStorage();
 
     /**
+     * Returns storage permissions for files
+     *
+     * NOTE: Value between 0600 and 0666, add 0111 for directory permissions.
+     *
      * @return int
      */
     public function getStoragePermissions();
