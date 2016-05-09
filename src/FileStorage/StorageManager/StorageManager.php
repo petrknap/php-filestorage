@@ -135,7 +135,7 @@ class StorageManager implements StorageManagerInterface
     public function assignFile(FileInterface $file)
     {
         if (!$file->exists()) {
-            throw new AssignException("Could not assign nonexistent file.");
+            throw new AssignException("Could not assign nonexistent file");
         }
 
         $data = $this->readIndex($file);

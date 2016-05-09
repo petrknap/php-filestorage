@@ -3,6 +3,8 @@
 namespace PetrKnap\Php\FileStorage\File;
 
 use Nunzion\Expect;
+use PetrKnap\Php\FileStorage\File\Exception\FileAccessException;
+use PetrKnap\Php\FileStorage\File\Exception\FileNotFoundException;
 use PetrKnap\Php\FileStorage\FileInterface;
 use PetrKnap\Php\FileStorage\StorageManagerInterface;
 
@@ -65,7 +67,7 @@ class File implements FileInterface
     private function checkIfFileExists()
     {
         if (!$this->exists()) {
-            throw new FileNotFoundException("File {$this} not found.");
+            throw new FileNotFoundException("File {$this} not found");
         }
     }
 
@@ -75,7 +77,7 @@ class File implements FileInterface
     public function create()
     {
         if ($this->exists()) {
-            throw new FileExistsException("File {$this} exists.");
+            throw new FileExistsException("File {$this} exists");
         }
 
         $dirName = dirname($this->realPathToFile);
@@ -86,13 +88,13 @@ class File implements FileInterface
         $return = touch($this->realPathToFile);
 
         if ($return === false) {
-            throw new FileAccessException("Couldn't create file {$this}.");
+            throw new FileAccessException("Could not create file {$this}");
         }
 
         $return = chmod($this->realPathToFile, $this->storageManager->getStoragePermissions());
 
         if ($return === false) {
-            throw new FileAccessException("Couldn't change permissions on file {$this}.");
+            throw new FileAccessException("Could not change permissions on file {$this}");
         }
 
         $this->storageManager->assignFile($this);
@@ -110,17 +112,17 @@ class File implements FileInterface
         $file = fopen($this->realPathToFile, "rb");
 
         if ($file === false) {
-            throw new FileAccessException("Couldn't open file {$this} for read.");
+            throw new FileAccessException("Could not open file {$this} for read");
         }
 
         $return = stream_get_contents($file);
 
         if (fclose($file) === false) {
-            throw new FileAccessException("Couldn't close file {$this}.");
+            throw new FileAccessException("Could not close file {$this}");
         }
 
         if ($return === false) {
-            throw new FileAccessException("Couldn't read from file {$this}.");
+            throw new FileAccessException("Could not read from file {$this}");
         }
 
         return $return;
@@ -140,17 +142,17 @@ class File implements FileInterface
         $file = fopen($this->realPathToFile, $append ? "ab" : "wb");
 
         if ($file === false) {
-            throw new FileAccessException("Couldn't open file {$this} for write.");
+            throw new FileAccessException("Could not open file {$this} for write");
         }
 
         $return = fwrite($file, $data);
 
         if (fclose($file) === false) {
-            throw new FileAccessException("Couldn't close file {$this}.");
+            throw new FileAccessException("Could not close file {$this}");
         }
 
         if ($return === false) {
-            throw new FileAccessException("Couldn't write to {$this}.");
+            throw new FileAccessException("Could not write to {$this}");
         }
 
         return $this;
@@ -164,7 +166,7 @@ class File implements FileInterface
         $this->checkIfFileExists();
 
         if (!@unlink($this->realPathToFile)) {
-            throw new FileAccessException("Couldn't delete file {$this}.");
+            throw new FileAccessException("Could not delete file {$this}");
         }
 
         $this->storageManager->unassignFile($this);
