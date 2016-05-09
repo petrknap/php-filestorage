@@ -40,11 +40,17 @@ class File implements FileInterface
         $this->realPathToFile = $this->storageManager->generateRealPath($pathToFile);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getPathToFile()
     {
         return $this->pathToFile;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function exists()
     {
         return file_exists($this->realPathToFile);
@@ -60,6 +66,9 @@ class File implements FileInterface
         }
     }
 
+    /**
+     * @inheritdoc
+     */
     public function create()
     {
         if ($this->exists()) {
@@ -82,6 +91,9 @@ class File implements FileInterface
         return $this;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function read()
     {
         $this->checkIfFileExists();
@@ -105,6 +117,9 @@ class File implements FileInterface
         return $return;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function write($data, $append = false)
     {
         $this->checkIfFileExists();
@@ -130,6 +145,9 @@ class File implements FileInterface
         return $this;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function delete()
     {
         $this->checkIfFileExists();
@@ -143,6 +161,9 @@ class File implements FileInterface
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function __toString()
     {
         return "'{$this->pathToFile}' stored as '{$this->realPathToFile}'";
