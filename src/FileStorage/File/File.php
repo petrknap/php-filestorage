@@ -2,6 +2,7 @@
 
 namespace PetrKnap\Php\FileStorage\File;
 
+use Nunzion\Expect;
 use PetrKnap\Php\FileStorage\FileInterface;
 use PetrKnap\Php\FileStorage\StorageManagerInterface;
 
@@ -35,6 +36,8 @@ class File implements FileInterface
      */
     public function __construct(StorageManagerInterface $storageManager, $pathToFile)
     {
+        Expect::that($pathToFile)->isString();
+
         $this->pathToFile = $pathToFile;
         $this->storageManager = $storageManager;
         $this->realPathToFile = $this->storageManager->generateRealPath($pathToFile);
@@ -122,6 +125,8 @@ class File implements FileInterface
      */
     public function write($data, $append = false)
     {
+        Expect::that($append)->isBetween(false, true);
+
         $this->checkIfFileExists();
 
         $append = ($append === true || $append === FILE_APPEND);
