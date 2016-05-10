@@ -18,6 +18,7 @@ use PetrKnap\Php\FileStorage\StorageManagerInterface;
 class StorageManager implements StorageManagerInterface
 {
     const INDEX_FILE = "index.json";
+    const INDEX_FILE__DATA__PATH_TO_FILE = "ptf";
 
     /**
      * @var string
@@ -144,7 +145,7 @@ class StorageManager implements StorageManagerInterface
         $data = $this->readIndex($file);
         $files = &$data["files"][basename($this->getPathToFile($file))];
         $files = [
-            "pathToFile" => $file->getPath()
+            self::INDEX_FILE__DATA__PATH_TO_FILE => $file->getPath()
         ];
         $this->writeIndex($file, $data);
 
@@ -175,7 +176,7 @@ class StorageManager implements StorageManagerInterface
                 if ($item->isFile() && $item->getBaseName() == self::INDEX_FILE) {
                     $index = json_decode(file_get_contents($item->getRealPath()), true);
                     foreach ($index["files"] as $file => $metaData) {
-                        yield new File($this, $metaData["pathToFile"]);
+                        yield new File($this, $metaData[self::INDEX_FILE__DATA__PATH_TO_FILE]);
                     }
                 }
             }
