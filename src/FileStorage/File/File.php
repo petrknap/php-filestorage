@@ -4,6 +4,7 @@ namespace PetrKnap\Php\FileStorage\File;
 
 use Nunzion\Expect;
 use PetrKnap\Php\FileStorage\File\Exception\FileAccessException;
+use PetrKnap\Php\FileStorage\File\Exception\FileExistsException;
 use PetrKnap\Php\FileStorage\File\Exception\FileNotFoundException;
 use PetrKnap\Php\FileStorage\FileInterface;
 use PetrKnap\Php\FileStorage\StorageManagerInterface;
