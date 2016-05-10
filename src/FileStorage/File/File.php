@@ -134,7 +134,9 @@ class File implements FileInterface
      */
     public function write($data, $append = false)
     {
-        Expect::that($append)->isBetween(false, true);
+        if (!is_bool($append)) {
+            Expect::that($append)->_("must be boolean");
+        }
 
         $this->checkIfFileExists();
 
