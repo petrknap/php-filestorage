@@ -2,11 +2,39 @@
 
 File storage for PHP by [Petr Knap].
 
+* [About resolved issue](#about-resolved-issue)
+    * [Advantages](#advantages)
+    * [Disadvantages](#disadvantages)
 * [Usage of php-filestorage](#usage-of-php-filestorage)
     * [Standard usage](#standard-usage)
     * [Create custom file implementation](#create-custom-file-implementation)
     * [Create custom storage manager implementation](#create-custom-storage-manager-implementation)
 * [How to install](#how-to-install)
+
+
+
+## About resolved issue
+
+> I need to use something where around 60,000 files with average size of 30kb are stored in a single directory (this is a requirement so can't simply break into sub-directories with smaller number of files).
+>
+> The files will be accessed randomly, but once created there will be no writes to the same filesystem. I'm currently using Ext3 but finding it very slow. Any suggestions?
+-- [Filesystem large number of files in a single directory - bugmenot77, voretaq7]
+
+This file storage solves this issue simply - it **creates virtual layer between file system and application**. Every path is converted into path which is composed from many directories which contains only small amount of sub-directories.
+
+If you wish to store 1 000 000 files in one directory, this file storage converts paths and stores them in huge tree-structure. Every directory (exclude leafs) contains up to 256 sub-directories. Leafs contains only files.
+
+### Advantages
+
+ * Can store a huge amount of files in single directory
+ * Can use fully localized paths to files (f.e.: `/シックス.log`)
+ * Naturally protects files outside the storage
+ * Every user can has separated and isolated file storage
+
+### Disadvantages
+
+ * Real file structure is not user-friendly
+ * Can not effectively get files sorted by any key (without DBMS)
 
 
 
@@ -157,5 +185,6 @@ Or manually clone this repository via `git clone https://github.com/petrknap/php
 
 
 [Petr Knap]:http://petrknap.cz/
+[Filesystem large number of files in a single directory - bugmenot77, voretaq7]:http://serverfault.com/q/43133
 [one of released versions]:https://github.com/petrknap/php-filestorage/releases
 [this repository as ZIP]:https://github.com/petrknap/php-filestorage/archive/master.zip
