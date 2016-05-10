@@ -43,7 +43,7 @@ class File implements FileInterface
 
         $this->path = $path;
         $this->storageManager = $storageManager;
-        $this->realPathToFile = $this->storageManager->generateRealPath($path);
+        $this->realPathToFile = $this->storageManager->getPathToFile($this);
     }
 
     /**

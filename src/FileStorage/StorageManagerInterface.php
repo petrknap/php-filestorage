@@ -28,12 +28,12 @@ interface StorageManagerInterface
     public function getStoragePermissions();
 
     /**
-     * Generates real path to file
+     * Returns path to file
      *
-     * @param string $pathToFile user-friendly (readable) path to file
+     * @param FileInterface $file
      * @return string
      */
-    public function generateRealPath($pathToFile);
+    public function getPathToFile(FileInterface $file);
 
     /**
      * Assigns file to storage

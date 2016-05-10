@@ -60,8 +60,10 @@ class StorageManager implements StorageManagerInterface
     /**
      * @inheritdoc
      */
-    public function generateRealPath($pathToFile)
+    public function getPathToFile(FileInterface $file)
     {
+        $pathToFile = $file->getPath();
+
         $sha1 = sha1($pathToFile);
         $md5 = md5($pathToFile);
         $lastDotPosition = strrpos($pathToFile, ".");
@@ -91,7 +93,7 @@ class StorageManager implements StorageManagerInterface
      */
     private function getPathToIndex(FileInterface $file)
     {
-        return dirname($this->generateRealPath($file->getPath())) . "/" . self::INDEX_FILE;
+        return dirname($this->getPathToFile($file)) . "/" . self::INDEX_FILE;
     }
 
     /**
@@ -139,7 +141,7 @@ class StorageManager implements StorageManagerInterface
         }
 
         $data = $this->readIndex($file);
-        $files = &$data["files"][basename($this->generateRealPath($file->getPath()))];
+        $files = &$data["files"][basename($this->getPathToFile($file))];
         $files = [
             "pathToFile" => $file->getPath()
         ];
@@ -154,7 +156,7 @@ class StorageManager implements StorageManagerInterface
     public function unassignFile(FileInterface $file)
     {
         $data = $this->readIndex($file);
-        unset($data["files"][basename($this->generateRealPath($this->pathToStorage, $file->getPath()))]);
+        unset($data["files"][basename($this->getPathToFile($file))]);
         $this->writeIndex($file, $data);
 
         return $this;
