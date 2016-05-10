@@ -80,6 +80,6 @@ class StorageManagerTest extends TestCase
         $storageManager->assignFile($file->create());
 
         $storageManager->unassignFile($file);
-        $this->assertCount(1, $this->toArray($storageManager->getFiles()));
+        $this->assertCount(0, $this->toArray($storageManager->getFiles()));
     }
 }
