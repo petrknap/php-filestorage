@@ -3,49 +3,141 @@
 File storage for PHP by [Petr Knap].
 
 * [Usage of php-filestorage](#usage-of-php-filestorage)
-    * [File declaration](#file-declaration)
-    * [File usage](#file-usage)
+    * [Standard usage](#standard-usage)
+    * [Create custom file implementation](#create-custom-file-implementation)
+    * [Create custom storage manager implementation](#create-custom-storage-manager-implementation)
 * [How to install](#how-to-install)
 
 
 
 ## Usage of php-filestorage
 
-### File declaration
+### Standard usage
+
 ```php
-class File extends \PetrKnap\Php\FileStorage\AbstractFile
+use PetrKnap\Php\FileStorage\File\File;
+use PetrKnap\Php\FileStorage\StorageManager\StorageManager;
+
+$storage = new StorageManager(__DIR__ . "/temp");
+
+$createFile = new File($storage, "/create.me");
+$createFile->create();
+
+$readFile = new File($storage, "/read.me");
+fwrite(STDOUT, $readFile->read());
+
+$writeFile = new File($storage, "/write.me");
+$writeFile->write("Hello ");
+$writeFile->write("World!", true);
+
+$deleteFile = new File($storage, "/delete.me");
+$deleteFile->delete();
+
+$file = new File($storage, "/file.txt");
+printf("File %s %s", $file->getPath(), $file->exists() ? "found" : "not found");
+```
+
+### Create custom file implementation
+
+```php
+use PetrKnap\Php\FileStorage\FileInterface;
+use PetrKnap\Php\FileStorage\StorageManagerInterface;
+
+class MyFile implements FileInterface
 {
-    protected function getStorageDirectory()
+    private $storage;
+
+    private $path;
+
+    public function __construct(StorageManagerInterface $storage, $path)
     {
-        return __DIR__ . "/../storage";
+        $this->storage = $storage;
+        $this->path = $path;
+    }
+
+    public function getPath()
+    {
+        return $this->path;
+    }
+
+    public function exists()
+    {
+        return file_exists($this->storage->getPathToFile($this));
+    }
+
+    public function create()
+    {
+        touch($this->storage->getPathToFile($this));
+
+        return $this;
+    }
+
+    public function read()
+    {
+        return file_get_contents($this->storage->getPathToFile($this));
+    }
+
+    public function write($data, $append = false)
+    {
+        file_put_contents($this->storage->getPathToFile($this), $data, $append ? FILE_APPEND : null);
+
+        return $this;
+    }
+
+    public function delete()
+    {
+        unlink($this->storage->getPathToFile($this));
+
+        return $this;
     }
 }
 ```
 
-### File usage
-```php
-$file = new File("/write.txt");
-$file->crate();
-$file->write("Hello world!");
-```
+### Create custom storage manager implementation
 
 ```php
-$file = new File("/read.txt");
-if ($file->exists()) {
-    echo $file->read();
-} else {
-    throw new \Exception("File not found.");
+use PetrKnap\Php\FileStorage\StorageManagerInterface;
+
+class MyStorageManager implements StorageManagerInterface
+{
+    public function getPathToStorage()
+    {
+        return "/mnt/huge_drive";
+    }
+
+    public function getStoragePermissions()
+    {
+        return 0666;
+    }
+
+    public function getPathToFile(FileInterface $file)
+    {
+        return $this->getPathToStorage() . $file->getPath();
+    }
+
+    public function assignFile(FileInterface $file)
+    {
+        return $this;
+    }
+
+    public function unassignFile(FileInterface $file)
+    {
+        return $this;
+    }
+
+    public function getFiles()
+    {
+        $directoryIterator = new \RecursiveDirectoryIterator($this->pathToStorage);
+        $itemIterator = new \RecursiveIteratorIterator($directoryIterator);
+        foreach ($itemIterator as $item) {
+            if ($item->isFile()) {
+                yield new MyFile($this, str_replace($this->getPathToStorage(), "", $item->getRealPath()));
+            }
+        }
+    }
 }
 ```
 
-```php
-$file = new File("/delete.txt");
-if ($file->exists()) {
-    $file->delete();
-} else {
-    throw new \Exception("File not found.");
-}
-```
 
 
 ## How to install
