@@ -35,7 +35,7 @@ class File implements FileInterface
     /**
      * @inheritdoc
      */
-    public function getPathToFile()
+    public function getPath()
     {
         return $this->pathToFile;
     }

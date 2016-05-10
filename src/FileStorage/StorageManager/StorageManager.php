@@ -3,6 +3,7 @@
 namespace PetrKnap\Php\FileStorage\StorageManager;
 
 use Nunzion\Expect;
+use PetrKnap\Php\FileStorage\File\File;
 use PetrKnap\Php\FileStorage\FileInterface;
 use PetrKnap\Php\FileStorage\StorageManager\Exception\AssignException;
 use PetrKnap\Php\FileStorage\StorageManagerInterface;
@@ -167,13 +168,15 @@ class StorageManager implements StorageManagerInterface
      */
     public function getFiles()
     {
-        $directoryIterator = new \RecursiveDirectoryIterator($this->pathToStorage);
-        $itemIterator = new \RecursiveIteratorIterator($directoryIterator);
-        foreach ($itemIterator as $item) {
-            if ($item->isFile() && $item->getBaseName() == self::INDEX_FILE) {
-                $index = json_decode(file_get_contents($item->getRealPath()), true);
-                foreach($index["files"] as $file => $metaData) {
-                    yield new static($metaData["pathToFile"]);
+        if (file_exists($this->pathToStorage)) {
+            $directoryIterator = new \RecursiveDirectoryIterator($this->pathToStorage);
+            $itemIterator = new \RecursiveIteratorIterator($directoryIterator);
+            foreach ($itemIterator as $item) {
+                if ($item->isFile() && $item->getBaseName() == self::INDEX_FILE) {
+                    $index = json_decode(file_get_contents($item->getRealPath()), true);
+                    foreach ($index["files"] as $file => $metaData) {
+                        yield new File($this, $metaData["pathToFile"]);
+                    }
                 }
             }
         }

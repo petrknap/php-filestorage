@@ -2,6 +2,7 @@
 
 namespace PetrKnap\Php\FileStorage\Test\StorageManager;
 
+use PetrKnap\Php\FileStorage\FileInterface;
 use PetrKnap\Php\FileStorage\StorageManager\Exception\AssignException;
 use PetrKnap\Php\FileStorage\StorageManager\StorageManager;
 use PetrKnap\Php\FileStorage\Test\StorageManager\StorageManagerTest\File;
@@ -81,5 +82,33 @@ class StorageManagerTest extends TestCase
 
         $storageManager->unassignFile($file);
         $this->assertCount(0, $this->toArray($storageManager->getFiles()));
+    }
+
+    /**
+     * @dataProvider canGetFilesDataProvider
+     *
+     * @param int $countOfFiles
+     */
+    public function testCanGetFiles($countOfFiles)
+    {
+        $storageManager = $this->getStorageManager();
+        for ($i = 0; $i < $countOfFiles; $i++) {
+            $file = $this->getFile($storageManager);
+            $storageManager->assignFile($file->create());
+        }
+
+        $counter = 0;
+        foreach ($storageManager->getFiles() as $file) {
+            $counter++;
+            $this->assertInstanceOf(FileInterface::class, $file);
+        }
+        $this->assertEquals($countOfFiles, $counter);
+    }
+
+    public function canGetFilesDataProvider()
+    {
+        return [
+            [0], [1], [2], [3], [5], [8], [13], [21]
+        ];
     }
 }
