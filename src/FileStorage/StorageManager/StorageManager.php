@@ -91,7 +91,7 @@ class StorageManager implements StorageManagerInterface
      */
     private function getPathToIndex(FileInterface $file)
     {
-        return dirname($this->generateRealPath($file->getPathToFile())) . "/" . self::INDEX_FILE;
+        return dirname($this->generateRealPath($file->getPath())) . "/" . self::INDEX_FILE;
     }
 
     /**
@@ -139,9 +139,9 @@ class StorageManager implements StorageManagerInterface
         }
 
         $data = $this->readIndex($file);
-        $files = &$data["files"][basename($this->generateRealPath($file->getPathToFile()))];
+        $files = &$data["files"][basename($this->generateRealPath($file->getPath()))];
         $files = [
-            "pathToFile" => $file->getPathToFile()
+            "pathToFile" => $file->getPath()
         ];
         $this->writeIndex($file, $data);
 
@@ -154,7 +154,7 @@ class StorageManager implements StorageManagerInterface
     public function unassignFile(FileInterface $file)
     {
         $data = $this->readIndex($file);
-        unset($data["files"][basename($this->generateRealPath($this->pathToStorage, $file->getPathToFile()))]);
+        unset($data["files"][basename($this->generateRealPath($this->pathToStorage, $file->getPath()))]);
         $this->writeIndex($file, $data);
 
         return $this;

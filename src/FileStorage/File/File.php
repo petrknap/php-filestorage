@@ -20,7 +20,7 @@ class File implements FileInterface
     /**
      * @var string
      */
-    private $pathToFile;
+    private $path;
 
     /**
      * @var string
@@ -34,23 +34,23 @@ class File implements FileInterface
 
     /**
      * @param StorageManagerInterface $storageManager
-     * @param string $pathToFile user-friendly (readable) path to file
+     * @param string $path user-friendly (readable) path to file
      */
-    public function __construct(StorageManagerInterface $storageManager, $pathToFile)
+    public function __construct(StorageManagerInterface $storageManager, $path)
     {
-        Expect::that($pathToFile)->isString();
+        Expect::that($path)->isString();
 
-        $this->pathToFile = $pathToFile;
+        $this->path = $path;
         $this->storageManager = $storageManager;
-        $this->realPathToFile = $this->storageManager->generateRealPath($pathToFile);
+        $this->realPathToFile = $this->storageManager->generateRealPath($path);
     }
 
     /**
      * @inheritdoc
      */
-    public function getPathToFile()
+    public function getPath()
     {
-        return $this->pathToFile;
+        return $this->path;
     }
 
     /**
@@ -179,6 +179,6 @@ class File implements FileInterface
      */
     public function __toString()
     {
-        return "'{$this->pathToFile}' stored as '{$this->realPathToFile}'";
+        return "'{$this->path}' stored as '{$this->realPathToFile}'";
     }
 }

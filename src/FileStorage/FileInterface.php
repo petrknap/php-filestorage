@@ -16,7 +16,7 @@ interface FileInterface
      *
      * @return string
      */
-    public function getPathToFile();
+    public function getPath();
 
     /**
      * Returns true if file does exist
