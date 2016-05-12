@@ -63,6 +63,10 @@ $deleteFile->delete();
 
 $file = new File($storage, "/file.txt");
 printf("File %s %s", $file->getPath(), $file->exists() ? "found" : "not found");
+
+foreach ($storage->getFiles() as $file) {
+    printf("\t%s\n", $file->getPath());
+}
 ```
 
 ### Create custom file implementation
