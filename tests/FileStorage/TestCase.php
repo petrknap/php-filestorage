@@ -2,9 +2,7 @@
 
 namespace PetrKnap\Php\FileStorage\Test;
 
-use PetrKnap\Php\FileStorage\Test\AbstractTestCase\TestFile;
-
-abstract class AbstractTestCase extends \PHPUnit_Framework_TestCase
+abstract class TestCase extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var string
@@ -15,11 +13,6 @@ abstract class AbstractTestCase extends \PHPUnit_Framework_TestCase
      * @var string
      */
     private static $tempPrefix;
-
-    /**
-     * @var int
-     */
-    private $countOfKnownFiles = 0;
 
     /**
      * @param string $tempDir
@@ -57,24 +50,32 @@ abstract class AbstractTestCase extends \PHPUnit_Framework_TestCase
         return $temporaryDirectory;
     }
 
-    private static function removeDirectory($directory, $deep = 0)
+    private static function removeDirectory($directory)
     {
+        $removeDirectoryRecursively = function($directory) use (&$removeDirectoryRecursively) {
+            chmod($directory, 0777);
+            $directoryIterator = new \DirectoryIterator($directory);
+            $itemIterator = new \IteratorIterator($directoryIterator);
+            foreach ($itemIterator as $item) {
+                if ($item->isDir() && !$item->isDot()) {
+                    $removeDirectoryRecursively($item->getPathname());
+                } elseif ($item->isFile()) {
+                    unlink($item->getPathname());
+                }
+            }
+            rmdir($directory);
+        };
+
         $directoryIterator = new \DirectoryIterator($directory);
         $itemIterator = new \IteratorIterator($directoryIterator);
         foreach ($itemIterator as $item) {
-            if ($item->isDir() && !$item->isDot()) {
-                self::removeDirectory($item->getRealPath(), $deep + 1);
+            if ($item->isDir() && preg_match('|^' . self::$tempPrefix . '|', $item->getBaseName())) {
+                fwrite(STDERR, PHP_EOL . "Removing '{$item->getPathname()}'...");
+                $removeDirectoryRecursively($item->getPathname());
+                fwrite(STDERR, " done");
             }
         }
-
-        if ($deep % 10 == 0) {
-            $cmd = sprintf(
-                "rsync -a --delete %s %s",
-                escapeshellcmd(__DIR__ . "/AbstractTestCase/empty_directory/"),
-                escapeshellcmd($directory . "/")
-            );
-            exec($cmd);
-        }
+        fwrite(STDERR, PHP_EOL);
     }
 
     public static function tearDownAfterClass()
@@ -83,14 +84,7 @@ abstract class AbstractTestCase extends \PHPUnit_Framework_TestCase
 
         parent::tearDownAfterClass();
     }
-
-    protected function getFile()
-    {
-        $this->countOfKnownFiles++;
-
-        return new TestFile("/{$this->countOfKnownFiles}.file");
-    }
 }
 
-AbstractTestCase::setTempDir(__DIR__ . "/../../temp");
-AbstractTestCase::setTempPrefix("test_");
+TestCase::setTempDir(__DIR__ . "/../../temp");
+TestCase::setTempPrefix("test_");

@@ -15,7 +15,8 @@
     "preferred-install": "dist"
   },
   "require": {
-    "php": ">=5.5"
+    "php": ">=5.5",
+    "nunzion/php-expect": "^1.1"
   },
   "require-dev": {
     "phpunit/phpunit": "4.*",
@@ -23,7 +24,7 @@
   },
   "scripts": {
     "test": [
-      "./vendor/bin/phpunit --testsuite main"
+      "./vendor/bin/phpunit --testsuite main 2>/dev/null"
     ],
     "post-autoload-dump": [
       "@test"
