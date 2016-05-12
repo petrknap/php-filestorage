@@ -2,10 +2,11 @@
 
 namespace PetrKnap\Php\FileStorage\Test;
 
-use PetrKnap\Php\FileStorage\Test\AbstractTestCase\TestFile;
+use PetrKnap\Php\FileStorage\File\File;
+use PetrKnap\Php\FileStorage\StorageManager\StorageManager;
 use PetrKnap\Php\Profiler\SimpleProfiler;
 
-class PerformanceTest extends AbstractTestCase
+class PerformanceTest extends TestCase
 {
     /**
      * @dataProvider performanceIsNotIntrusiveDataProvider
@@ -15,7 +16,7 @@ class PerformanceTest extends AbstractTestCase
      */
     public function testPerformanceIsNotIntrusive($directory, $from, $to)
     {
-        TestFile::setStorageDirectory($directory);
+        $storageManager = new StorageManager($directory, 0666);
 
         $profilerWasEnabled = SimpleProfiler::start();
         if(!$profilerWasEnabled) {
@@ -24,7 +25,7 @@ class PerformanceTest extends AbstractTestCase
 
         #region Build storage
         for ($i = $from; $i < $to; $i++) {
-            $file = $this->getFile();
+            $file = new File($storageManager, "/file_{$i}.tmp");
 
             #region Create file
             SimpleProfiler::start();
@@ -36,7 +37,7 @@ class PerformanceTest extends AbstractTestCase
             #region Write content
             SimpleProfiler::start();
             $file->write(sha1($i, true));
-            $file->write(md5($i, true), FILE_APPEND);
+            $file->write(md5($i, true), true);
             $profile = SimpleProfiler::finish();
             $this->assertLessThanOrEqual(10, $profile->absoluteDuration);
             #endregion
@@ -53,7 +54,7 @@ class PerformanceTest extends AbstractTestCase
         #region Iterate all files
         SimpleProfiler::start();
         /** @noinspection PhpUnusedLocalVariableInspection */
-        foreach($this->getFile()->getFiles() as $unused);
+        foreach($storageManager->getFiles() as $unused);
         $profile = SimpleProfiler::finish();
         $this->assertLessThanOrEqual(5 * $to, $profile->absoluteDuration);
         #endregion
@@ -66,8 +67,8 @@ class PerformanceTest extends AbstractTestCase
 
     public function performanceIsNotIntrusiveDataProvider()
     {
-        $iMax = 16384;
-        $step = 128;
+        $iMax = 2048;
+        $step = 512;
         $output = [];
         $directory = $this->getTemporaryDirectory();
         for ($i = 0; $i < $iMax; $i += $step)

@@ -52,19 +52,27 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
 
     private static function removeDirectory($directory)
     {
+        $removeDirectoryRecursively = function($directory) use (&$removeDirectoryRecursively) {
+            chmod($directory, 0777);
+            $directoryIterator = new \DirectoryIterator($directory);
+            $itemIterator = new \IteratorIterator($directoryIterator);
+            foreach ($itemIterator as $item) {
+                if ($item->isDir() && !$item->isDot()) {
+                    $removeDirectoryRecursively($item->getPathname());
+                } elseif ($item->isFile()) {
+                    unlink($item->getPathname());
+                }
+            }
+            rmdir($directory);
+        };
+
         $directoryIterator = new \DirectoryIterator($directory);
         $itemIterator = new \IteratorIterator($directoryIterator);
         foreach ($itemIterator as $item) {
             if ($item->isDir() && preg_match('|^' . self::$tempPrefix . '|', $item->getBaseName())) {
-                $cmd = sprintf(
-                    "chmod 0777 %s -R; rsync -a --delete %s %s; rm -rf %s",
-                    escapeshellarg($item->getRealPath() . "/"),
-                    escapeshellarg(__DIR__ . "/TestCase/empty_directory/"),
-                    escapeshellarg($item->getRealPath() . "/"),
-                    escapeshellarg($item->getRealPath() . "/")
-                );
-                fwrite(STDERR, PHP_EOL . $cmd);
-                exec($cmd);
+                fwrite(STDERR, PHP_EOL . "Removing '{$item->getPathname()}'...");
+                $removeDirectoryRecursively($item->getPathname());
+                fwrite(STDERR, " done");
             }
         }
         fwrite(STDERR, PHP_EOL);
