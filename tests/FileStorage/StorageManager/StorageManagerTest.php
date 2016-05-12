@@ -4,6 +4,9 @@ namespace PetrKnap\Php\FileStorage\Test\StorageManager;
 
 use PetrKnap\Php\FileStorage\FileInterface;
 use PetrKnap\Php\FileStorage\StorageManager\Exception\AssignException;
+use PetrKnap\Php\FileStorage\StorageManager\Exception\IndexDecodeException;
+use PetrKnap\Php\FileStorage\StorageManager\Exception\IndexReadException;
+use PetrKnap\Php\FileStorage\StorageManager\Exception\IndexWriteException;
 use PetrKnap\Php\FileStorage\StorageManager\StorageManager;
 use PetrKnap\Php\FileStorage\Test\StorageManager\StorageManagerTest\File;
 use PetrKnap\Php\FileStorage\Test\TestCase;
@@ -42,7 +45,7 @@ class StorageManagerTest extends TestCase
         return $output;
     }
 
-    public function testCanGetStoragePermissions()
+    public function testGetStoragePermissionsWorks()
     {
         $storageBasePermissions = 0654;
         $storageManager = new StorageManager($this->getTemporaryDirectory(), $storageBasePermissions);
@@ -50,15 +53,18 @@ class StorageManagerTest extends TestCase
         $this->assertEquals($storageBasePermissions, $storageManager->getStoragePermissions());
     }
 
-    public function testCanAssignFile()
+    public function testAssignFileWorks()
     {
         $storageManager = $this->getStorageManager();
         $file = $this->getFile($storageManager);
-
         $file->create();
+
         $storageManager->assignFile($file);
         $this->assertCount(1, $this->toArray($storageManager->getFiles()));
+    }
 
+    public function testAssignFileWorksWithNonexistentFile()
+    {
         $storageManager = $this->getStorageManager();
         $file = $this->getFile($storageManager);
 
@@ -66,7 +72,19 @@ class StorageManagerTest extends TestCase
         $storageManager->assignFile($file);
     }
 
-    public function testCanUnassignFile()
+    public function testAssignFileWorksWithInaccessibleStorage()
+    {
+        $storageManager = $this->getStorageManager();
+        $file = $this->getFile($storageManager);
+        $file->create();
+        mkdir(dirname($storageManager->getPathToFile($file)), 0777, true);
+        chmod(dirname($storageManager->getPathToFile($file)), 0111);
+
+        $this->setExpectedException(IndexWriteException::class);
+        $storageManager->assignFile($file);
+    }
+
+    public function testUnassignFileWorks()
     {
         $storageManager = $this->getStorageManager();
         $file = $this->getFile($storageManager);
@@ -76,12 +94,23 @@ class StorageManagerTest extends TestCase
         $this->assertCount(0, $this->toArray($storageManager->getFiles()));
     }
 
+    public function testUnassignFileWorksWithInaccessibleStorage()
+    {
+        $storageManager = $this->getStorageManager();
+        $file = $this->getFile($storageManager);
+        $storageManager->assignFile($file->create());
+        chmod(dirname($storageManager->getPathToFile($file)) . "/" . StorageManager::INDEX_FILE, 0000);
+
+        $this->setExpectedException(IndexReadException::class);
+        $storageManager->unassignFile($file);
+    }
+
     /**
-     * @dataProvider canGetFilesDataProvider
+     * @dataProvider countOfFilesDataProvider
      *
      * @param int $countOfFiles
      */
-    public function testCanGetFiles($countOfFiles)
+    public function testGetFilesWorks($countOfFiles)
     {
         $storageManager = $this->getStorageManager();
         for ($i = 0; $i < $countOfFiles; $i++) {
@@ -97,7 +126,18 @@ class StorageManagerTest extends TestCase
         $this->assertEquals($countOfFiles, $counter);
     }
 
-    public function canGetFilesDataProvider()
+    public function testGetFilesWorksWithCorruptedIndexFile()
+    {
+        $storageManager = $this->getStorageManager();
+        $file = $this->getFile($storageManager);
+        $storageManager->assignFile($file->create());
+        file_put_contents(dirname($storageManager->getPathToFile($file)) . "/" . StorageManager::INDEX_FILE, "");
+
+        $this->setExpectedException(IndexDecodeException::class);
+        $storageManager->getFiles()->current();
+    }
+
+    public function countOfFilesDataProvider()
     {
         return [
             [0], [1], [2], [3], [5], [8], [13], [21]

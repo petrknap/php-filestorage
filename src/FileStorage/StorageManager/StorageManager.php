@@ -6,6 +6,9 @@ use Nunzion\Expect;
 use PetrKnap\Php\FileStorage\File\File;
 use PetrKnap\Php\FileStorage\FileInterface;
 use PetrKnap\Php\FileStorage\StorageManager\Exception\AssignException;
+use PetrKnap\Php\FileStorage\StorageManager\Exception\IndexDecodeException;
+use PetrKnap\Php\FileStorage\StorageManager\Exception\IndexReadException;
+use PetrKnap\Php\FileStorage\StorageManager\Exception\IndexWriteException;
 use PetrKnap\Php\FileStorage\StorageManagerInterface;
 
 /**
@@ -93,14 +96,27 @@ class StorageManager implements StorageManagerInterface
     /**
      * Loads index file
      *
-     * @param FileInterface $file
+     * @param string $pathToIndex
      * @return array
+     * @throws IndexDecodeException
+     * @throws IndexReadException
      */
-    private function readIndex(FileInterface $file)
+    private function readIndex($pathToIndex)
     {
-        $pathToIndex = $this->getPathToIndex($file);
         if (file_exists($pathToIndex)) {
-            return json_decode(file_get_contents($pathToIndex), true);
+            $contentOfIndex = @file_get_contents($pathToIndex);
+
+            if ($contentOfIndex === false) {
+                throw new IndexReadException("Could not read index file '{$pathToIndex}'");
+            }
+
+            $decodedIndex = json_decode($contentOfIndex, true);
+
+            if ($decodedIndex === null) {
+                throw new IndexDecodeException("Could not decode index file '{$pathToIndex}'");
+            }
+
+            return $decodedIndex;
         } else {
             return [];
         }
@@ -109,19 +125,23 @@ class StorageManager implements StorageManagerInterface
     /**
      * Saves index file
      *
-     * @param FileInterface $file
+     * @param string $pathToIndex
      * @param array $data
+     * @throws IndexWriteException
      */
-    private function writeIndex(FileInterface $file, array $data)
+    private function writeIndex($pathToIndex, array $data)
     {
-        $pathToIndex = $this->getPathToIndex($file);
-
         $dirName = dirname($pathToIndex);
         if (!file_exists($dirName)) {
             @mkdir($dirName, $this->storagePermissions + 0111, true);
         }
 
-        file_put_contents($pathToIndex, json_encode($data));
+        $return = @file_put_contents($pathToIndex, json_encode($data));
+
+        if ($return === false) {
+            throw new IndexWriteException("Could not read index file '{$pathToIndex}'");
+        }
+
         chmod($pathToIndex, $this->storagePermissions);
     }
 
@@ -134,12 +154,13 @@ class StorageManager implements StorageManagerInterface
             throw new AssignException("Could not assign nonexistent file");
         }
 
-        $data = $this->readIndex($file);
+        $pathToIndex = $this->getPathToIndex($file);
+        $data = $this->readIndex($pathToIndex);
         $files = &$data["files"][basename($this->getPathToFile($file))];
         $files = [
             self::INDEX_FILE__DATA__PATH_TO_FILE => $file->getPath()
         ];
-        $this->writeIndex($file, $data);
+        $this->writeIndex($pathToIndex, $data);
 
         return $this;
     }
@@ -149,9 +170,10 @@ class StorageManager implements StorageManagerInterface
      */
     public function unassignFile(FileInterface $file)
     {
-        $data = $this->readIndex($file);
+        $pathToIndex = $this->getPathToIndex($file);
+        $data = $this->readIndex($pathToIndex);
         unset($data["files"][basename($this->getPathToFile($file))]);
-        $this->writeIndex($file, $data);
+        $this->writeIndex($pathToIndex, $data);
 
         return $this;
     }
@@ -166,7 +188,7 @@ class StorageManager implements StorageManagerInterface
             $itemIterator = new \RecursiveIteratorIterator($directoryIterator);
             foreach ($itemIterator as $item) {
                 if ($item->isFile() && $item->getBaseName() == self::INDEX_FILE) {
-                    $index = json_decode(file_get_contents($item->getRealPath()), true);
+                    $index = $this->readIndex($item->getRealPath());
                     foreach ($index["files"] as $file => $metaData) {
                         yield new File($this, $metaData[self::INDEX_FILE__DATA__PATH_TO_FILE]);
                     }
