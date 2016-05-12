@@ -18,7 +18,8 @@ File storage for PHP by [Petr Knap].
 > I need to use something where around 60,000 files with average size of 30kb are stored in a single directory (this is a requirement so can't simply break into sub-directories with smaller number of files).
 >
 > The files will be accessed randomly, but once created there will be no writes to the same filesystem. I'm currently using Ext3 but finding it very slow. Any suggestions?
--- [Filesystem large number of files in a single directory - bugmenot77, voretaq7]
+>
+> -- [Filesystem large number of files in a single directory - bugmenot77, voretaq7]
 
 This file storage solves this issue simply - it **creates virtual layer between file system and application**. Every path is converted into path which is composed from many directories which contains only small amount of sub-directories.
 
