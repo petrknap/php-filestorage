@@ -86,7 +86,7 @@ class File implements FileInterface
             @mkdir($dirName, $this->storageManager->getStoragePermissions() + 0111, true);
         }
 
-        $return = touch($this->realPathToFile);
+        $return = @touch($this->realPathToFile);
 
         if ($return === false) {
             throw new FileAccessException("Could not create file {$this}");
@@ -110,7 +110,7 @@ class File implements FileInterface
     {
         $this->checkIfFileExists();
 
-        $file = fopen($this->realPathToFile, "rb");
+        $file = @fopen($this->realPathToFile, "rb");
 
         if ($file === false) {
             throw new FileAccessException("Could not open file {$this} for read");
@@ -142,7 +142,7 @@ class File implements FileInterface
 
         $append = ($append === true || $append === FILE_APPEND);
 
-        $file = fopen($this->realPathToFile, $append ? "ab" : "wb");
+        $file = @fopen($this->realPathToFile, $append ? "ab" : "wb");
 
         if ($file === false) {
             throw new FileAccessException("Could not open file {$this} for write");
