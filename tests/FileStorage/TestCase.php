@@ -57,7 +57,8 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
         foreach ($itemIterator as $item) {
             if ($item->isDir() && preg_match('|^' . self::$tempPrefix . '|', $item->getBaseName())) {
                 $cmd = sprintf(
-                    "rsync -a --delete %s %s; rm -rf %s",
+                    "chmod 0777 %s -R; rsync -a --delete %s %s; rm -rf %s",
+                    escapeshellarg($item->getRealPath() . "/"),
                     escapeshellarg(__DIR__ . "/TestCase/empty_directory/"),
                     escapeshellarg($item->getRealPath() . "/"),
                     escapeshellarg($item->getRealPath() . "/")
