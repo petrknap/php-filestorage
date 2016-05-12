@@ -42,14 +42,6 @@ class StorageManagerTest extends TestCase
         return $output;
     }
 
-    public function testCanGetPathToStorage()
-    {
-        $storageBasePath = $this->getTemporaryDirectory();
-        $storageManager = new StorageManager($storageBasePath);
-
-        $this->assertEquals($storageBasePath, $storageManager->getPathToStorage());
-    }
-
     public function testCanGetStoragePermissions()
     {
         $storageBasePermissions = 0654;

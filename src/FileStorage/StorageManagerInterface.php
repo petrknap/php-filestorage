@@ -12,13 +12,6 @@ namespace PetrKnap\Php\FileStorage;
 interface StorageManagerInterface
 {
     /**
-     * Returns path to storage
-     *
-     * @return string
-     */
-    public function getPathToStorage();
-
-    /**
      * Returns storage permissions for files
      *
      * NOTE: Value between 0600 and 0666, add 0111 for directory permissions.

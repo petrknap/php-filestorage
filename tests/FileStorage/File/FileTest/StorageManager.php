@@ -23,14 +23,6 @@ class StorageManager implements StorageManagerInterface
     /**
      * @inheritdoc
      */
-    public function getPathToStorage()
-    {
-        return $this->pathToStorage;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getStoragePermissions()
     {
         return 0666;

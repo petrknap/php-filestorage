@@ -87,8 +87,7 @@ class FileTest extends TestCase
         $storageManager = $this->getStorageManager();
         $file = $this->getFile($storageManager);
 
-        $this->assertTrue(mkdir($storageManager->getPathToStorage(), 0000));
-        $this->assertTrue(chmod($storageManager->getPathToStorage(), 0000));
+        $this->assertTrue(mkdir(dirname($storageManager->getPathToFile($file)), 0111, true));
 
         $this->setExpectedException(FileAccessException::class);
         $file->create();
