@@ -128,11 +128,6 @@ use PetrKnap\Php\FileStorage\StorageManagerInterface;
 
 class MyStorageManager implements StorageManagerInterface
 {
-    public function getPathToStorage()
-    {
-        return "/mnt/huge_drive";
-    }
-
     public function getStoragePermissions()
     {
         return 0666;
@@ -140,7 +135,7 @@ class MyStorageManager implements StorageManagerInterface
 
     public function getPathToFile(FileInterface $file)
     {
-        return $this->getPathToStorage() . $file->getPath();
+        return "/mnt/huge_drive" . $file->getPath();
     }
 
     public function assignFile(FileInterface $file)
