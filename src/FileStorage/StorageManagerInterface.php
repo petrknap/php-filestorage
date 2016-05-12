@@ -47,7 +47,7 @@ interface StorageManagerInterface
     /**
      * Returns all stored files
      *
-     * @return \Iterator|FileInterface[]
+     * @return \Generator|FileInterface[]
      */
     public function getFiles();
 }
