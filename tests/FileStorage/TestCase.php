@@ -58,9 +58,9 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
             if ($item->isDir() && preg_match('|^' . self::$tempPrefix . '|', $item->getBaseName())) {
                 $cmd = sprintf(
                     "rsync -a --delete %s %s; rm -rf %s",
-                    escapeshellcmd(__DIR__ . "/TestCase/empty_directory/"),
-                    escapeshellcmd($item->getRealPath() . "/"),
-                    escapeshellcmd($item->getRealPath() . "/")
+                    escapeshellarg(__DIR__ . "/TestCase/empty_directory/"),
+                    escapeshellarg($item->getRealPath() . "/"),
+                    escapeshellarg($item->getRealPath() . "/")
                 );
                 fwrite(STDERR, PHP_EOL . $cmd);
                 exec($cmd);
