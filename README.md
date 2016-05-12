@@ -22,7 +22,7 @@ File storage for PHP by [Petr Knap].
 
 This file storage solves this issue simply - it **creates virtual layer between file system and application**. Every path is converted into path which is composed from many directories which contains only small amount of sub-directories.
 
-If you wish to store 1 000 000 files in one directory, this file storage converts paths and stores them in huge tree-structure. Every directory (exclude leafs) contains up to 256 sub-directories. Leafs contains only files.
+If you wish to store 1 000 000 files in single directory, this file storage converts paths and stores them in huge tree-structure. Every directory (exclude leafs) contains up to 256 sub-directories. Leafs contains only files.
 
 ### Advantages
 
