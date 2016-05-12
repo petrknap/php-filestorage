@@ -159,7 +159,7 @@ class MyStorageManager implements StorageManagerInterface
         $itemIterator = new \RecursiveIteratorIterator($directoryIterator);
         foreach ($itemIterator as $item) {
             if ($item->isFile()) {
-                yield new MyFile($this, str_replace($this->getPathToStorage(), "", $item->getRealPath()));
+                yield new MyFile($this, str_replace($this->pathToStorage, "", $item->getRealPath()));
             }
         }
     }
