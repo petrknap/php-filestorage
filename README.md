@@ -52,7 +52,7 @@ $createFile = new File($storage, "/create.me");
 $createFile->create();
 
 $readFile = new File($storage, "/read.me");
-fwrite(STDOUT, $readFile->read());
+printf("%s: %s", $readFile->getPath(), $readFile->read());
 
 $writeFile = new File($storage, "/write.me");
 $writeFile->write("Hello ");
@@ -65,7 +65,7 @@ $file = new File($storage, "/file.txt");
 printf("File %s %s", $file->getPath(), $file->exists() ? "found" : "not found");
 
 foreach ($storage->getFiles() as $file) {
-    printf("\t%s\n", $file->getPath());
+    printf("%s\n", $file->getPath());
 }
 ```
 
