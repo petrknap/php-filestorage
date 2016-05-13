@@ -7,7 +7,6 @@ File storage for PHP by [Petr Knap].
     * [Disadvantages](#disadvantages)
 * [Usage of php-filestorage](#usage-of-php-filestorage)
     * [Standard usage](#standard-usage)
-    * [Create custom storage manager implementation](#create-custom-storage-manager-implementation)
 * [How to install](#how-to-install)
 
 
@@ -66,46 +65,6 @@ printf("File %s %s", $file->getPath(), $file->exists() ? "found" : "not found");
 
 foreach ($storage->getFiles() as $file) {
     printf("%s\n", $file->getPath());
-}
-```
-
-### Create custom storage manager implementation
-
-```php
-use PetrKnap\Php\FileStorage\StorageManagerInterface;
-
-class MyStorageManager implements StorageManagerInterface
-{
-    public function getStoragePermissions()
-    {
-        return 0666;
-    }
-
-    public function getPathToFile(FileInterface $file)
-    {
-        return "/mnt/huge_drive" . $file->getPath();
-    }
-
-    public function assignFile(FileInterface $file)
-    {
-        return $this;
-    }
-
-    public function unassignFile(FileInterface $file)
-    {
-        return $this;
-    }
-
-    public function getFiles()
-    {
-        $directoryIterator = new \RecursiveDirectoryIterator($this->pathToStorage);
-        $itemIterator = new \RecursiveIteratorIterator($directoryIterator);
-        foreach ($itemIterator as $item) {
-            if ($item->isFile()) {
-                yield new MyFile($this, str_replace("/mnt/huge_drive", "", $item->getRealPath()));
-            }
-        }
-    }
 }
 ```
 
