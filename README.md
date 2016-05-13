@@ -7,7 +7,6 @@ File storage for PHP by [Petr Knap].
     * [Disadvantages](#disadvantages)
 * [Usage of php-filestorage](#usage-of-php-filestorage)
     * [Standard usage](#standard-usage)
-    * [Create custom file implementation](#create-custom-file-implementation)
     * [Create custom storage manager implementation](#create-custom-storage-manager-implementation)
 * [How to install](#how-to-install)
 
@@ -67,62 +66,6 @@ printf("File %s %s", $file->getPath(), $file->exists() ? "found" : "not found");
 
 foreach ($storage->getFiles() as $file) {
     printf("%s\n", $file->getPath());
-}
-```
-
-### Create custom file implementation
-
-```php
-use PetrKnap\Php\FileStorage\FileInterface;
-use PetrKnap\Php\FileStorage\StorageManagerInterface;
-
-class MyFile implements FileInterface
-{
-    private $storage;
-
-    private $path;
-
-    public function __construct(StorageManagerInterface $storage, $path)
-    {
-        $this->storage = $storage;
-        $this->path = $path;
-    }
-
-    public function getPath()
-    {
-        return $this->path;
-    }
-
-    public function exists()
-    {
-        return file_exists($this->storage->getPathToFile($this));
-    }
-
-    public function create()
-    {
-        touch($this->storage->getPathToFile($this));
-
-        return $this;
-    }
-
-    public function read()
-    {
-        return file_get_contents($this->storage->getPathToFile($this));
-    }
-
-    public function write($data, $append = false)
-    {
-        file_put_contents($this->storage->getPathToFile($this), $data, $append ? FILE_APPEND : null);
-
-        return $this;
-    }
-
-    public function delete()
-    {
-        unlink($this->storage->getPathToFile($this));
-
-        return $this;
-    }
 }
 ```
 
