@@ -2,6 +2,9 @@
 
 namespace PetrKnap\Php\FileStorage\StorageManager;
 
+use League\Flysystem\Adapter\Local;
+use League\Flysystem\Filesystem;
+use League\Flysystem\FilesystemInterface;
 use Nunzion\Expect;
 use PetrKnap\Php\FileStorage\File\File;
 use PetrKnap\Php\FileStorage\FileInterface;
@@ -25,34 +28,29 @@ class StorageManager implements StorageManagerInterface
     const INDEX_FILE__DATA__PATH_TO_FILE = "ptf";
 
     /**
-     * @var string
+     * @var FileSystemInterface
      */
-    private $pathToStorage;
+    private $filesystem;
 
     /**
-     * @var int
+     * @param string|FilesystemInterface $storagePathOrFilesystem
      */
-    private $storagePermissions;
-
-    /**
-     * @param string $storagePath path to storage
-     * @param int $storagePermissions
-     */
-    public function __construct($storagePath, $storagePermissions = 0644)
+    public function __construct($storagePathOrFilesystem)
     {
-        Expect::that($storagePath)->isString();
-        Expect::that($storagePermissions)->isBetween(0600, 0666);
+        if (is_string($storagePathOrFilesystem)) {
+            $storagePathOrFilesystem = new Filesystem(new Local($storagePathOrFilesystem));
+        }
+        Expect::that($storagePathOrFilesystem)->isInstanceOf(FilesystemInterface::class);
 
-        $this->pathToStorage = $storagePath;
-        $this->storagePermissions = $storagePermissions;
+        $this->filesystem = $storagePathOrFilesystem;
     }
 
     /**
      * @inheritdoc
      */
-    public function getStoragePermissions()
+    public function getFilesystem()
     {
-        return $this->storagePermissions;
+        return $this->filesystem;
     }
 
     /**
@@ -73,8 +71,7 @@ class StorageManager implements StorageManagerInterface
 
         $fileName = "{$sha1Prefix}-{$md5}{$ext}";
 
-        $realPath = "{$this->pathToStorage}";
-
+        $realPath = "";
         foreach ($dirs as $dir) {
             $realPath = "{$realPath}/{$dir}";
         }
@@ -104,8 +101,8 @@ class StorageManager implements StorageManagerInterface
      */
     private function readIndex($pathToIndex)
     {
-        if (file_exists($pathToIndex)) {
-            $contentOfIndex = @file_get_contents($pathToIndex);
+        if ($this->filesystem->has($pathToIndex)) {
+            $contentOfIndex = @$this->filesystem->read($pathToIndex);
 
             if ($contentOfIndex === false) {
                 throw new IndexReadException("Could not read index file '{$pathToIndex}'");
@@ -132,18 +129,15 @@ class StorageManager implements StorageManagerInterface
      */
     private function writeIndex($pathToIndex, array $data)
     {
-        $dirName = dirname($pathToIndex);
-        if (!file_exists($dirName)) {
-            @mkdir($dirName, $this->storagePermissions + 0111, true);
+        if (!$this->filesystem->has($pathToIndex)) {
+            $return = @$this->filesystem->write($pathToIndex, json_encode($data));
+        } else {
+            $return = @$this->filesystem->update($pathToIndex, json_encode($data));
         }
-
-        $return = @file_put_contents($pathToIndex, json_encode($data));
 
         if ($return === false) {
             throw new IndexWriteException("Could not read index file '{$pathToIndex}'");
         }
-
-        chmod($pathToIndex, $this->storagePermissions);
     }
 
     /**
@@ -184,15 +178,12 @@ class StorageManager implements StorageManagerInterface
      */
     public function getFiles()
     {
-        if (file_exists($this->pathToStorage)) {
-            $directoryIterator = new \RecursiveDirectoryIterator($this->pathToStorage);
-            $itemIterator = new \RecursiveIteratorIterator($directoryIterator);
-            foreach ($itemIterator as $item) {
-                if ($item->isFile() && $item->getBaseName() == self::INDEX_FILE) {
-                    $index = $this->readIndex($item->getRealPath());
-                    foreach ($index[self::INDEX_FILE__DATA] as $file => $metaData) {
-                        yield new File($this, $metaData[self::INDEX_FILE__DATA__PATH_TO_FILE]);
-                    }
+        foreach ($this->filesystem->listContents("/", true) as $item) {
+            $pathToItem = "/{$item["path"]}";
+            if (preg_match('|' . self::INDEX_FILE . '$|', $pathToItem)) {
+                $index = $this->readIndex($pathToItem);
+                foreach ($index[self::INDEX_FILE__DATA] as $file => $metaData) {
+                    yield new File($this, $metaData[self::INDEX_FILE__DATA__PATH_TO_FILE]);
                 }
             }
         }

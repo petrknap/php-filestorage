@@ -16,7 +16,7 @@ class PerformanceTest extends TestCase
      */
     public function testPerformanceIsNotIntrusive($directory, $from, $to)
     {
-        $storageManager = new StorageManager($directory, 0666);
+        $storageManager = new StorageManager($directory);
 
         $profilerWasEnabled = SimpleProfiler::start();
         if(!$profilerWasEnabled) {

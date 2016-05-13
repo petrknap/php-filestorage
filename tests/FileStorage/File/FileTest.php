@@ -2,6 +2,8 @@
 
 namespace PetrKnap\Php\FileStorage\Test\File;
 
+use League\Flysystem\Adapter\Local;
+use League\Flysystem\Filesystem;
 use PetrKnap\Php\FileStorage\File\Exception\FileAccessException;
 use PetrKnap\Php\FileStorage\File\Exception\FileExistsException;
 use PetrKnap\Php\FileStorage\File\Exception\FileNotFoundException;
@@ -12,11 +14,20 @@ use PetrKnap\Php\FileStorage\Test\TestCase;
 class FileTest extends TestCase
 {
     /**
+     * @return Filesystem
+     */
+    private function getLocalFilesystem()
+    {
+        return new Filesystem(new Local($this->getTemporaryDirectory()));
+    }
+
+    /**
+     * @param Filesystem $filesystem
      * @return StorageManager
      */
-    public function getStorageManager()
+    private function getStorageManager(Filesystem $filesystem)
     {
-        return new StorageManager($this->getTemporaryDirectory());
+        return new StorageManager($filesystem);
     }
 
     /**
@@ -37,14 +48,20 @@ class FileTest extends TestCase
     private function getInaccessibleFile(StorageManager $storageManager) {
         $file = $this->getFile($storageManager)->create();
 
-        $this->assertTrue(chmod($storageManager->getPathToFile($file), 0000));
+        /** @noinspection PhpUndefinedMethodInspection */
+        chmod(
+            $storageManager->getFilesystem()->getAdapter()
+                ->applyPathPrefix($storageManager->getPathToFile($file)),
+            0000
+        );
 
         return $file;
     }
 
     public function testGetPathToFileWorks()
     {
-        $storageManager = $this->getStorageManager();
+        $filesystem = $this->getLocalFilesystem();
+        $storageManager = $this->getStorageManager($filesystem);
         $file = $this->getFile($storageManager);
 
         $this->assertStringMatchesFormat("/file_%d.test", $file->getPath());
@@ -52,29 +69,34 @@ class FileTest extends TestCase
 
     public function testExistsWorks()
     {
-        $storageManager = $this->getStorageManager();
+        $filesystem = $this->getLocalFilesystem();
+        $storageManager = $this->getStorageManager($filesystem);
         $file = $this->getFile($storageManager);
 
         $this->assertFalse($file->exists());
 
-        $realPath = $storageManager->getPathToFile($file);
-        @mkdir(dirname($realPath), $storageManager->getStoragePermissions() + 0111, true);
+        /** @noinspection PhpUndefinedMethodInspection */
+        $realPath = $filesystem->getAdapter()->applyPathPrefix($storageManager->getPathToFile($file));
+        @mkdir(dirname($realPath), 0777, true);
         touch($realPath);
         $this->assertTrue($file->exists());
     }
 
     public function testCreateWorks()
     {
-        $storageManager = $this->getStorageManager();
+        $filesystem = $this->getLocalFilesystem();
+        $storageManager = $this->getStorageManager($filesystem);
         $file = $this->getFile($storageManager);
 
         $file->create();
-        $this->assertFileExists($storageManager->getPathToFile($file));
+        /** @noinspection PhpUndefinedMethodInspection */
+        $this->assertFileExists($filesystem->getAdapter()->applyPathPrefix($storageManager->getPathToFile($file)));
     }
 
     public function testCreateWorksWithExistentFile()
     {
-        $storageManager = $this->getStorageManager();
+        $filesystem = $this->getLocalFilesystem();
+        $storageManager = $this->getStorageManager($filesystem);
         $file = $this->getFile($storageManager);
         $file->create();
 
@@ -84,10 +106,12 @@ class FileTest extends TestCase
 
     public function testCreateWorksWithInaccessibleStorage()
     {
-        $storageManager = $this->getStorageManager();
+        $filesystem = $this->getLocalFilesystem();
+        $storageManager = $this->getStorageManager($filesystem);
         $file = $this->getFile($storageManager);
 
-        $this->assertTrue(mkdir(dirname($storageManager->getPathToFile($file)), 0111, true));
+        /** @noinspection PhpUndefinedMethodInspection */
+        chmod(dirname($filesystem->getAdapter()->applyPathPrefix($storageManager->getPathToFile($file))), 0111);
 
         $this->setExpectedException(FileAccessException::class);
         $file->create();
@@ -99,17 +123,20 @@ class FileTest extends TestCase
      */
     public function testReadWorks($content)
     {
-        $storageManager = $this->getStorageManager();
+        $filesystem = $this->getLocalFilesystem();
+        $storageManager = $this->getStorageManager($filesystem);
         $file = $this->getFile($storageManager);
         $file->create();
 
-        file_put_contents($storageManager->getPathToFile($file), $content);
+        /** @noinspection PhpUndefinedMethodInspection */
+        file_put_contents($filesystem->getAdapter()->applyPathPrefix($storageManager->getPathToFile($file)), $content);
         $this->assertEquals($content, $file->read());
     }
 
     public function testReadWorksWithNonexistentFile()
     {
-        $storageManager = $this->getStorageManager();
+        $filesystem = $this->getLocalFilesystem();
+        $storageManager = $this->getStorageManager($filesystem);
         $file = $this->getFile($storageManager);
 
         $this->setExpectedException(FileNotFoundException::class);
@@ -118,7 +145,8 @@ class FileTest extends TestCase
 
     public function testReadWorksWithInaccessibleFile()
     {
-        $storageManager = $this->getStorageManager();
+        $filesystem = $this->getLocalFilesystem();
+        $storageManager = $this->getStorageManager($filesystem);
         $file = $this->getInaccessibleFile($storageManager);
 
         $this->setExpectedException(FileAccessException::class);
@@ -131,23 +159,28 @@ class FileTest extends TestCase
      */
     public function testWriteWorks($content)
     {
-        $storageManager = $this->getStorageManager();
+        $filesystem = $this->getLocalFilesystem();
+        $storageManager = $this->getStorageManager($filesystem);
         $file = $this->getFile($storageManager);
         $file->create();
 
         $file->write($content);
-        $this->assertEquals($content, file_get_contents($storageManager->getPathToFile($file)));
+        /** @noinspection PhpUndefinedMethodInspection */
+        $this->assertEquals($content, file_get_contents($filesystem->getAdapter()->applyPathPrefix($storageManager->getPathToFile($file))));
 
         $file->write($content, true);
-        $this->assertEquals($content . $content, file_get_contents($storageManager->getPathToFile($file)));
+        /** @noinspection PhpUndefinedMethodInspection */
+        $this->assertEquals($content . $content, file_get_contents($filesystem->getAdapter()->applyPathPrefix($storageManager->getPathToFile($file))));
 
         $file->write($content, false);
-        $this->assertEquals($content, file_get_contents($storageManager->getPathToFile($file)));
+        /** @noinspection PhpUndefinedMethodInspection */
+        $this->assertEquals($content, file_get_contents($filesystem->getAdapter()->applyPathPrefix($storageManager->getPathToFile($file))));
     }
 
     public function testWriteWorksWithNonexistentFile()
     {
-        $storageManager = $this->getStorageManager();
+        $filesystem = $this->getLocalFilesystem();
+        $storageManager = $this->getStorageManager($filesystem);
         $file = $this->getFile($storageManager);
 
         $this->setExpectedException(FileNotFoundException::class);
@@ -156,7 +189,8 @@ class FileTest extends TestCase
 
     public function testWriteWorksWithInaccessibleFile()
     {
-        $storageManager = $this->getStorageManager();
+        $filesystem = $this->getLocalFilesystem();
+        $storageManager = $this->getStorageManager($filesystem);
         $file = $this->getInaccessibleFile($storageManager);
 
         $this->setExpectedException(FileAccessException::class);
@@ -165,11 +199,13 @@ class FileTest extends TestCase
 
     public function testDeleteWorks()
     {
-        $storageManager = $this->getStorageManager();
+        $filesystem = $this->getLocalFilesystem();
+        $storageManager = $this->getStorageManager($filesystem);
         $file = $this->getFile($storageManager);
 
-        $realPath = $storageManager->getPathToFile($file);
-        @mkdir(dirname($realPath), $storageManager->getStoragePermissions() + 0111, true);
+        /** @noinspection PhpUndefinedMethodInspection */
+        $realPath = $filesystem->getAdapter()->applyPathPrefix($storageManager->getPathToFile($file));
+        @mkdir(dirname($realPath), 0777, true);
         touch($realPath);
 
         $file->delete();
@@ -178,7 +214,8 @@ class FileTest extends TestCase
 
     public function testDeleteWorksWithNonexistentFile()
     {
-        $storageManager = $this->getStorageManager();
+        $filesystem = $this->getLocalFilesystem();
+        $storageManager = $this->getStorageManager($filesystem);
         $file = $this->getFile($storageManager);
 
         $this->setExpectedException(FileNotFoundException::class);
@@ -187,9 +224,11 @@ class FileTest extends TestCase
 
     public function testDeleteWorksWithInaccessibleFile()
     {
-        $storageManager = $this->getStorageManager();
+        $filesystem = $this->getLocalFilesystem();
+        $storageManager = $this->getStorageManager($filesystem);
         $file = $this->getInaccessibleFile($storageManager);
-        chmod(dirname($storageManager->getPathToFile($file)), 0111);
+        /** @noinspection PhpUndefinedMethodInspection */
+        chmod(dirname($filesystem->getAdapter()->applyPathPrefix($storageManager->getPathToFile($file))), 0111);
 
         $this->setExpectedException(FileAccessException::class);
         $file->delete();

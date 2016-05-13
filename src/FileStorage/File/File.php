@@ -59,7 +59,7 @@ class File implements FileInterface
      */
     public function exists()
     {
-        return file_exists($this->realPathToFile);
+        return $this->storageManager->getFilesystem()->has($this->realPathToFile);
     }
 
     /**
@@ -81,21 +81,11 @@ class File implements FileInterface
             throw new FileExistsException("File {$this} exists");
         }
 
-        $dirName = dirname($this->realPathToFile);
-        if (!file_exists($dirName)) {
-            @mkdir($dirName, $this->storageManager->getStoragePermissions() + 0111, true);
-        }
-
-        $return = @touch($this->realPathToFile);
+        $return = @$this->storageManager->getFilesystem()
+            ->write($this->realPathToFile, null);
 
         if ($return === false) {
             throw new FileAccessException("Could not create file {$this}");
-        }
-
-        $return = chmod($this->realPathToFile, $this->storageManager->getStoragePermissions());
-
-        if ($return === false) {
-            throw new FileAccessException("Could not change permissions on file {$this}");
         }
 
         $this->storageManager->assignFile($this);
@@ -110,17 +100,8 @@ class File implements FileInterface
     {
         $this->checkIfFileExists();
 
-        $file = @fopen($this->realPathToFile, "rb");
-
-        if ($file === false) {
-            throw new FileAccessException("Could not open file {$this} for read");
-        }
-
-        $return = stream_get_contents($file);
-
-        if (fclose($file) === false) {
-            throw new FileAccessException("Could not close file {$this}");
-        }
+        $return = @$this->storageManager->getFilesystem()
+            ->read($this->realPathToFile);
 
         if ($return === false) {
             throw new FileAccessException("Could not read from file {$this}");
@@ -140,19 +121,11 @@ class File implements FileInterface
 
         $this->checkIfFileExists();
 
-        $append = ($append === true || $append === FILE_APPEND);
-
-        $file = @fopen($this->realPathToFile, $append ? "ab" : "wb");
-
-        if ($file === false) {
-            throw new FileAccessException("Could not open file {$this} for write");
+        if ($append) {
+            $data = $this->read() . $data;
         }
-
-        $return = fwrite($file, $data);
-
-        if (fclose($file) === false) {
-            throw new FileAccessException("Could not close file {$this}");
-        }
+        $return = @$this->storageManager->getFilesystem()
+            ->update($this->realPathToFile, $data);
 
         if ($return === false) {
             throw new FileAccessException("Could not write to {$this}");
@@ -168,7 +141,7 @@ class File implements FileInterface
     {
         $this->checkIfFileExists();
 
-        if (!@unlink($this->realPathToFile)) {
+        if (!@$this->storageManager->getFilesystem()->delete($this->realPathToFile)) {
             throw new FileAccessException("Could not delete file {$this}");
         }
 

@@ -2,30 +2,37 @@
 
 namespace PetrKnap\Php\FileStorage\Test\File\FileTest;
 
+use League\Flysystem\FilesystemInterface;
 use PetrKnap\Php\FileStorage\FileInterface;
 use PetrKnap\Php\FileStorage\StorageManagerInterface;
+use PetrKnap\Php\FileStorage\VisibilityEnum;
 
 class StorageManager implements StorageManagerInterface
 {
     /**
-     * @var string
+     * @var FilesystemInterface
      */
-    private $pathToStorage;
+    private $filesystem;
 
     /**
-     * @param string $pathToStorage
+     * @param FilesystemInterface $filesystem
      */
-    public function __construct($pathToStorage)
+    public function __construct(FilesystemInterface $filesystem)
     {
-        $this->pathToStorage = $pathToStorage;
+        $this->filesystem = $filesystem;
     }
 
     /**
      * @inheritdoc
      */
-    public function getStoragePermissions()
+    public function getDefaultVisibility()
     {
-        return 0666;
+        return VisibilityEnum::VISIBLE();
+    }
+
+    public function getFilesystem()
+    {
+        return $this->filesystem;
     }
 
     /**
@@ -33,7 +40,7 @@ class StorageManager implements StorageManagerInterface
      */
     public function getPathToFile(FileInterface $file)
     {
-        return $this->pathToStorage . DIRECTORY_SEPARATOR . sha1($file->getPath());
+        return DIRECTORY_SEPARATOR . sha1($file->getPath());
     }
 
     /**

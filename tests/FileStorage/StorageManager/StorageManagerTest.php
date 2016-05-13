@@ -2,6 +2,8 @@
 
 namespace PetrKnap\Php\FileStorage\Test\StorageManager;
 
+use League\Flysystem\Adapter\Local;
+use League\Flysystem\Filesystem;
 use PetrKnap\Php\FileStorage\FileInterface;
 use PetrKnap\Php\FileStorage\StorageManager\Exception\AssignException;
 use PetrKnap\Php\FileStorage\StorageManager\Exception\IndexDecodeException;
@@ -14,11 +16,20 @@ use PetrKnap\Php\FileStorage\Test\TestCase;
 class StorageManagerTest extends TestCase
 {
     /**
+     * @return Filesystem
+     */
+    private function getLocalFilesystem()
+    {
+        return new Filesystem(new Local($this->getTemporaryDirectory()));
+    }
+
+    /**
+     * @param Filesystem $filesystem
      * @return StorageManager
      */
-    private function getStorageManager()
+    private function getStorageManager(Filesystem $filesystem)
     {
-        return new StorageManager($this->getTemporaryDirectory(), 0666);
+        return new StorageManager($filesystem);
     }
 
     /**
@@ -45,17 +56,10 @@ class StorageManagerTest extends TestCase
         return $output;
     }
 
-    public function testGetStoragePermissionsWorks()
-    {
-        $storageBasePermissions = 0654;
-        $storageManager = new StorageManager($this->getTemporaryDirectory(), $storageBasePermissions);
-
-        $this->assertEquals($storageBasePermissions, $storageManager->getStoragePermissions());
-    }
-
     public function testAssignFileWorks()
     {
-        $storageManager = $this->getStorageManager();
+        $filesystem = $this->getLocalFilesystem();
+        $storageManager = $this->getStorageManager($filesystem);
         $file = $this->getFile($storageManager);
         $file->create();
 
@@ -65,7 +69,8 @@ class StorageManagerTest extends TestCase
 
     public function testAssignFileWorksWithNonexistentFile()
     {
-        $storageManager = $this->getStorageManager();
+        $filesystem = $this->getLocalFilesystem();
+        $storageManager = $this->getStorageManager($filesystem);
         $file = $this->getFile($storageManager);
 
         $this->setExpectedException(AssignException::class);
@@ -74,11 +79,14 @@ class StorageManagerTest extends TestCase
 
     public function testAssignFileWorksWithInaccessibleStorage()
     {
-        $storageManager = $this->getStorageManager();
+        $filesystem = $this->getLocalFilesystem();
+        $storageManager = $this->getStorageManager($filesystem);
         $file = $this->getFile($storageManager);
         $file->create();
-        mkdir(dirname($storageManager->getPathToFile($file)), 0777, true);
-        chmod(dirname($storageManager->getPathToFile($file)), 0111);
+        /** @noinspection PhpUndefinedMethodInspection */
+        mkdir(dirname($filesystem->getAdapter()->applyPathPrefix($storageManager->getPathToFile($file))), 0777, true);
+        /** @noinspection PhpUndefinedMethodInspection */
+        chmod(dirname($filesystem->getAdapter()->applyPathPrefix($storageManager->getPathToFile($file))), 0111);
 
         $this->setExpectedException(IndexWriteException::class);
         $storageManager->assignFile($file);
@@ -86,7 +94,8 @@ class StorageManagerTest extends TestCase
 
     public function testUnassignFileWorks()
     {
-        $storageManager = $this->getStorageManager();
+        $filesystem = $this->getLocalFilesystem();
+        $storageManager = $this->getStorageManager($filesystem);
         $file = $this->getFile($storageManager);
         $storageManager->assignFile($file->create());
 
@@ -96,10 +105,12 @@ class StorageManagerTest extends TestCase
 
     public function testUnassignFileWorksWithInaccessibleStorage()
     {
-        $storageManager = $this->getStorageManager();
+        $filesystem = $this->getLocalFilesystem();
+        $storageManager = $this->getStorageManager($filesystem);
         $file = $this->getFile($storageManager);
         $storageManager->assignFile($file->create());
-        chmod(dirname($storageManager->getPathToFile($file)) . "/" . StorageManager::INDEX_FILE, 0000);
+        /** @noinspection PhpUndefinedMethodInspection */
+        chmod(dirname($filesystem->getAdapter()->applyPathPrefix($storageManager->getPathToFile($file))) . "/" . StorageManager::INDEX_FILE, 0000);
 
         $this->setExpectedException(IndexReadException::class);
         $storageManager->unassignFile($file);
@@ -112,7 +123,8 @@ class StorageManagerTest extends TestCase
      */
     public function testGetFilesWorks($countOfFiles)
     {
-        $storageManager = $this->getStorageManager();
+        $filesystem = $this->getLocalFilesystem();
+        $storageManager = $this->getStorageManager($filesystem);
         for ($i = 0; $i < $countOfFiles; $i++) {
             $file = $this->getFile($storageManager);
             $storageManager->assignFile($file->create());
@@ -128,10 +140,12 @@ class StorageManagerTest extends TestCase
 
     public function testGetFilesWorksWithCorruptedIndexFile()
     {
-        $storageManager = $this->getStorageManager();
+        $filesystem = $this->getLocalFilesystem();
+        $storageManager = $this->getStorageManager($filesystem);
         $file = $this->getFile($storageManager);
         $storageManager->assignFile($file->create());
-        file_put_contents(dirname($storageManager->getPathToFile($file)) . "/" . StorageManager::INDEX_FILE, "");
+        /** @noinspection PhpUndefinedMethodInspection */
+        file_put_contents(dirname($filesystem->getAdapter()->applyPathPrefix($storageManager->getPathToFile($file))) . "/" . StorageManager::INDEX_FILE, "");
 
         $this->setExpectedException(IndexDecodeException::class);
         $storageManager->getFiles()->current();

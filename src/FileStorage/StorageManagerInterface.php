@@ -2,6 +2,8 @@
 
 namespace PetrKnap\Php\FileStorage;
 
+use League\Flysystem\FilesystemInterface;
+
 /**
  * @author   Petr Knap <dev@petrknap.cz>
  * @since    2016-05-09
@@ -12,13 +14,11 @@ namespace PetrKnap\Php\FileStorage;
 interface StorageManagerInterface
 {
     /**
-     * Returns storage permissions for files
+     * Returns filesystem object
      *
-     * NOTE: Value between 0600 and 0666, add 0111 for directory permissions.
-     *
-     * @return int
+     * @return FileSystemInterface
      */
-    public function getStoragePermissions();
+    public function getFilesystem();
 
     /**
      * Returns path to file
