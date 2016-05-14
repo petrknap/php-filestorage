@@ -2,7 +2,7 @@
 
 namespace PetrKnap\Php\FileStorage\Test;
 
-abstract class TestCase extends \PHPUnit_Framework_TestCase
+abstract class AbstractTestCase extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var string
@@ -41,7 +41,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     /**
      * @return string
      */
-    protected function getTemporaryDirectory()
+    protected static function getTemporaryDirectory()
     {
         $temporaryDirectory = tempnam(self::$tempDir, self::$tempPrefix);
 
@@ -84,7 +84,16 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
 
         parent::tearDownAfterClass();
     }
+
+    protected function invokePrivateMethod($object, $method, array $arguments = [])
+    {
+        $objectReflection = new \ReflectionClass($object);
+        $methodReflection = $objectReflection->getMethod($method);
+
+        $methodReflection->setAccessible(true);
+        return $methodReflection->invokeArgs($object, $arguments);
+    }
 }
 
-TestCase::setTempDir(__DIR__ . "/../../temp");
-TestCase::setTempPrefix("test_");
+AbstractTestCase::setTempDir(__DIR__ . "/../../temp");
+AbstractTestCase::setTempPrefix("test_");
