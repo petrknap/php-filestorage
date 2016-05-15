@@ -29,6 +29,7 @@ If you wish to store 1 000 000 files in single directory, this file storage conv
  * Can use fully localized paths to files (f.e.: `/シックス.log`)
  * Naturally protects files outside the storage
  * Every user can has separated and isolated file storage
+ * Fully compatible and based on [League\Flysystem]
 
 ### Disadvantages
 
@@ -42,29 +43,18 @@ If you wish to store 1 000 000 files in single directory, this file storage conv
 ### Standard usage
 
 ```php
-use PetrKnap\Php\FileStorage\File\File;
-use PetrKnap\Php\FileStorage\StorageManager\StorageManager;
+use League\Flysystem\Adapter\Local as LocalAdapter;
+use PetrKnap\Php\FileStorage\FileSystem;
 
-$storage = new StorageManager(__DIR__ . "/temp");
+$fileSystem = new FileSystem(new LocalAdapter(__DIR__ . "/temp"));
 
-$createFile = new File($storage, "/create.me");
-$createFile->create();
+$fileSystem->write("/file.txt", null);
+$fileSystem->update("/file.txt", "Hello World!");
 
-$readFile = new File($storage, "/read.me");
-printf("%s: %s", $readFile->getPath(), $readFile->read());
+printf("%s", $fileSystem->read("/file.txt"));
 
-$writeFile = new File($storage, "/write.me");
-$writeFile->write("Hello ");
-$writeFile->write("World!", true);
-
-$deleteFile = new File($storage, "/delete.me");
-$deleteFile->delete();
-
-$file = new File($storage, "/file.txt");
-printf("File %s %s", $file->getPath(), $file->exists() ? "found" : "not found");
-
-foreach ($storage->getFiles() as $file) {
-    printf("%s\n", $file->getPath());
+foreach ($fileSystem->listContents() as $metadata) {
+    $fileSystem->delete($metadata["path"]);
 }
 ```
 
@@ -88,5 +78,6 @@ Or manually clone this repository via `git clone https://github.com/petrknap/php
 
 [Petr Knap]:http://petrknap.cz/
 [Filesystem large number of files in a single directory - bugmenot77, voretaq7]:http://serverfault.com/q/43133
+[League\Flysystem]:https://github.com/thephpleague/flysystem
 [one of released versions]:https://github.com/petrknap/php-filestorage/releases
 [this repository as ZIP]:https://github.com/petrknap/php-filestorage/archive/master.zip
