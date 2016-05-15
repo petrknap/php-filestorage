@@ -7,8 +7,6 @@ File storage for PHP by [Petr Knap].
     * [Disadvantages](#disadvantages)
 * [Usage of php-filestorage](#usage-of-php-filestorage)
     * [Standard usage](#standard-usage)
-    * [Create custom file implementation](#create-custom-file-implementation)
-    * [Create custom storage manager implementation](#create-custom-storage-manager-implementation)
 * [How to install](#how-to-install)
 
 
@@ -18,11 +16,12 @@ File storage for PHP by [Petr Knap].
 > I need to use something where around 60,000 files with average size of 30kb are stored in a single directory (this is a requirement so can't simply break into sub-directories with smaller number of files).
 >
 > The files will be accessed randomly, but once created there will be no writes to the same filesystem. I'm currently using Ext3 but finding it very slow. Any suggestions?
--- [Filesystem large number of files in a single directory - bugmenot77, voretaq7]
+>
+> -- [Filesystem large number of files in a single directory - bugmenot77, voretaq7]
 
 This file storage solves this issue simply - it **creates virtual layer between file system and application**. Every path is converted into path which is composed from many directories which contains only small amount of sub-directories.
 
-If you wish to store 1 000 000 files in one directory, this file storage converts paths and stores them in huge tree-structure. Every directory (exclude leafs) contains up to 256 sub-directories. Leafs contains only files.
+If you wish to store 1 000 000 files in single directory, this file storage converts paths and stores them in huge tree-structure. Every directory (exclude leafs) contains up to 256 sub-directories. Leafs contains only files.
 
 ### Advantages
 
@@ -66,102 +65,6 @@ printf("File %s %s", $file->getPath(), $file->exists() ? "found" : "not found");
 
 foreach ($storage->getFiles() as $file) {
     printf("%s\n", $file->getPath());
-}
-```
-
-### Create custom file implementation
-
-```php
-use PetrKnap\Php\FileStorage\FileInterface;
-use PetrKnap\Php\FileStorage\StorageManagerInterface;
-
-class MyFile implements FileInterface
-{
-    private $storage;
-
-    private $path;
-
-    public function __construct(StorageManagerInterface $storage, $path)
-    {
-        $this->storage = $storage;
-        $this->path = $path;
-    }
-
-    public function getPath()
-    {
-        return $this->path;
-    }
-
-    public function exists()
-    {
-        return file_exists($this->storage->getPathToFile($this));
-    }
-
-    public function create()
-    {
-        touch($this->storage->getPathToFile($this));
-
-        return $this;
-    }
-
-    public function read()
-    {
-        return file_get_contents($this->storage->getPathToFile($this));
-    }
-
-    public function write($data, $append = false)
-    {
-        file_put_contents($this->storage->getPathToFile($this), $data, $append ? FILE_APPEND : null);
-
-        return $this;
-    }
-
-    public function delete()
-    {
-        unlink($this->storage->getPathToFile($this));
-
-        return $this;
-    }
-}
-```
-
-### Create custom storage manager implementation
-
-```php
-use PetrKnap\Php\FileStorage\StorageManagerInterface;
-
-class MyStorageManager implements StorageManagerInterface
-{
-    public function getStoragePermissions()
-    {
-        return 0666;
-    }
-
-    public function getPathToFile(FileInterface $file)
-    {
-        return "/mnt/huge_drive" . $file->getPath();
-    }
-
-    public function assignFile(FileInterface $file)
-    {
-        return $this;
-    }
-
-    public function unassignFile(FileInterface $file)
-    {
-        return $this;
-    }
-
-    public function getFiles()
-    {
-        $directoryIterator = new \RecursiveDirectoryIterator($this->pathToStorage);
-        $itemIterator = new \RecursiveIteratorIterator($directoryIterator);
-        foreach ($itemIterator as $item) {
-            if ($item->isFile()) {
-                yield new MyFile($this, str_replace($this->getPathToStorage(), "", $item->getRealPath()));
-            }
-        }
-    }
 }
 ```
 
