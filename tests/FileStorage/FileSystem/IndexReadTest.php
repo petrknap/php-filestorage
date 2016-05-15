@@ -1,6 +1,6 @@
 <?php
 
-namespace PetrKnap\Php\FileStorage\Test\FileSystemTest;
+namespace PetrKnap\Php\FileStorage\Test\FileSystem;
 
 use PetrKnap\Php\FileStorage\Exception\IndexDecodeException;
 use PetrKnap\Php\FileStorage\Exception\IndexReadException;
