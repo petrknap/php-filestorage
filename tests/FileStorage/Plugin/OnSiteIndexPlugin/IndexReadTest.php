@@ -2,8 +2,8 @@
 
 namespace PetrKnap\Php\FileStorage\Test\Plugin\OnSiteIndexPlugin;
 
-use PetrKnap\Php\FileStorage\Exception\IndexDecodeException;
-use PetrKnap\Php\FileStorage\Exception\IndexReadException;
+use PetrKnap\Php\FileStorage\Plugin\Exception\IndexDecodeException;
+use PetrKnap\Php\FileStorage\Plugin\Exception\IndexReadException;
 use PetrKnap\Php\FileStorage\Plugin\OnSiteIndexPlugin;
 use PetrKnap\Php\FileStorage\Test\Plugin\OnSiteIndexPluginTestCase;
 

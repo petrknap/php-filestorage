@@ -3,7 +3,6 @@
 namespace PetrKnap\Php\FileStorage\Test\Plugin\OnSiteIndexPlugin;
 
 use League\Flysystem\AdapterInterface;
-use PetrKnap\Php\FileStorage\FileSystem;
 use PetrKnap\Php\FileStorage\Test\Plugin\OnSiteIndexPluginTestCase;
 
 class GetPathsFromIndexTest extends OnSiteIndexPluginTestCase

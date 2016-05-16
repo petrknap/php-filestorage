@@ -4,10 +4,10 @@ namespace PetrKnap\Php\FileStorage\Plugin;
 
 use League\Flysystem\FilesystemInterface;
 use Nunzion\Expect;
-use PetrKnap\Php\FileStorage\Exception\IndexDecodeException;
-use PetrKnap\Php\FileStorage\Exception\IndexReadException;
-use PetrKnap\Php\FileStorage\Exception\IndexWriteException;
 use PetrKnap\Php\FileStorage\FileSystem;
+use PetrKnap\Php\FileStorage\Plugin\Exception\IndexDecodeException;
+use PetrKnap\Php\FileStorage\Plugin\Exception\IndexReadException;
+use PetrKnap\Php\FileStorage\Plugin\Exception\IndexWriteException;
 
 class OnSiteIndexPlugin extends AbstractIndexPlugin
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace PetrKnap\Php\FileStorage\Exception;
+namespace PetrKnap\Php\FileStorage\Plugin\Exception;
 
 abstract class IndexException extends Exception
 {
