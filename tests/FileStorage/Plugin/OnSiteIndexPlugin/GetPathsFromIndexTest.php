@@ -1,40 +1,42 @@
 <?php
 
-namespace PetrKnap\Php\FileStorage\Test\FileSystem;
+namespace PetrKnap\Php\FileStorage\Test\Plugin\OnSiteIndexPlugin;
 
-use PetrKnap\Php\FileStorage\Test\FileSystemTestCase;
+use League\Flysystem\AdapterInterface;
+use PetrKnap\Php\FileStorage\Test\Plugin\OnSiteIndexPluginTestCase;
 
-class ListContentsTest extends FileSystemTestCase
+class GetPathsFromIndexTest extends OnSiteIndexPluginTestCase
 {
-    private static $fileSystem;
+    /**
+     * @var AdapterInterface
+     */
+    private static $adapter;
 
     public static function setUpBeforeClass()
     {
         parent::setUpBeforeClass();
 
-        self::$fileSystem = self::getFileSystem(self::getTemporaryDirectory());
+        self::$adapter = self::getAdapter(self::getTemporaryDirectory());
+
+        $outerFileSystem = self::getOuterFileSystem(self::$adapter);
 
         for ($d1 = 0; $d1 < 20; $d1++) {
             for ($f = 0; $f < 2; $f++) {
-                self::$fileSystem->write(
-                    "/Directory #{$d1}/File #{$f}.txt",
-                    "This is file!"
-                );
+                $path = "/Directory #{$d1}/File #{$f}.txt";
+                $outerFileSystem->write($path, "This is file!");
                 for ($d2 = 0; $d2 < 5; $d2++) {
-                    self::$fileSystem->write(
-                        "/Directory #{$d1}/Directory #{$d2}/File #{$f}.txt",
-                        "This is file!"
-                    );
+                    $path = "/Directory #{$d1}/Directory #{$d2}/File #{$f}.txt";
+                    $outerFileSystem->write($path, "This is file!");
                 }
             }
         }
     }
 
-    public function testListContentsBackwardWorks()
+    public function testGetPathsFromIndexBackwardWorks()
     {
         $files = $this->invokePrivateMethod(
-            self::$fileSystem,
-            "listContentsBackward",
+            $this->getPlugin(self::$adapter),
+            "getPathsFromIndexBackward",
             [
                 "/",
                 true
@@ -56,17 +58,17 @@ class ListContentsTest extends FileSystemTestCase
     }
 
     /**
-     * @dataProvider listContentsForwardWorksDataAdapter
+     * @dataProvider getPathsFromIndexForwardWorksDataAdapter
      * @param string $directory
      * @param bool $recursive
      * @param string $dirnamePattern
      * @param int $countOfFiles
      */
-    public function testListContentsForwardWorks($directory, $recursive, $dirnamePattern, $countOfFiles)
+    public function testGetPathsFromIndexForwardWorks($directory, $recursive, $dirnamePattern, $countOfFiles)
     {
         $files = $this->invokePrivateMethod(
-            self::$fileSystem,
-            "listContentsForward",
+            $this->getPlugin(self::$adapter),
+            "getPathsFromIndexForward",
             [
                 $directory,
                 $recursive
@@ -87,7 +89,7 @@ class ListContentsTest extends FileSystemTestCase
         $this->assertEquals($countOfFiles, $fileCounter);
     }
 
-    public function listContentsForwardWorksDataAdapter()
+    public function getPathsFromIndexForwardWorksDataAdapter()
     {
         return [
             ["/", false, "/Directory #%d", 0],
@@ -101,15 +103,19 @@ class ListContentsTest extends FileSystemTestCase
         ];
     }
 
-    public function testListContentsWorks()
+    public function testGetPathsFromIndexWorks()
     {
-        $fileSystem = $this->getFileSystem($this->getTemporaryDirectory());
-        $fileSystem->write("/File #1.txt", null);
-        $fileSystem->write("/File #2.txt", null);
+        $adapter = $this->getAdapter($this->getTemporaryDirectory());
+        $outerFileSystem = $this->getOuterFileSystem($adapter);
+        $plugin = $this->getPlugin($adapter);
+        for ($i = 0; $i < 5; $i++) {
+            $path = "/File #{$i}.txt";
+            $outerFileSystem->write($path, null);
+        }
 
-        $files = $fileSystem->listContents();
+        $files = $plugin->getPathsFromIndex("", false);
 
         $this->assertInternalType("array", $files);
-        $this->assertCount(2, $files);
+        $this->assertCount(5, $files);
     }
 }

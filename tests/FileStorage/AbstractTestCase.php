@@ -85,7 +85,7 @@ abstract class AbstractTestCase extends \PHPUnit_Framework_TestCase
         parent::tearDownAfterClass();
     }
 
-    protected function invokePrivateMethod($object, $method, array $arguments = [])
+    protected static function invokePrivateMethod($object, $method, array $arguments = [])
     {
         $objectReflection = new \ReflectionClass($object);
         $methodReflection = $objectReflection->getMethod($method);
