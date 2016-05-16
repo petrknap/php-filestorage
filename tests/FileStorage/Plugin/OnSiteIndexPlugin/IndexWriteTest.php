@@ -1,23 +1,23 @@
 <?php
 
-namespace PetrKnap\Php\FileStorage\Test\FileSystem;
+namespace PetrKnap\Php\FileStorage\Test\Plugin\OnSiteIndexPlugin;
 
 use PetrKnap\Php\FileStorage\Exception\IndexWriteException;
-use PetrKnap\Php\FileStorage\FileSystem;
-use PetrKnap\Php\FileStorage\Test\FileSystemTestCase;
+use PetrKnap\Php\FileStorage\Plugin\OnSiteIndexPlugin;
+use PetrKnap\Php\FileStorage\Test\Plugin\OnSiteIndexPluginTestCase;
 
-class IndexWriteTest extends FileSystemTestCase
+class IndexWriteTest extends OnSiteIndexPluginTestCase
 {
-    const INDEX_FILE = FileSystem::INDEX_FILE;
-    const INNER_INDEX_FILE = "/71/82/20/7c/ea/19/51/62/77/f7/14/56/32/4b/f1/3d/fa/c3/1b/79-9e743aa713dcae5405f290e3db88178b.json";
+    const INDEX_FILE = OnSiteIndexPlugin::INDEX_FILE;
 
     public function testWriteIndexWorksWithExistentIndexFile()
     {
         $expected = ["key" => "value"];
         $fileSystem = $this->getFileSystem($this->getTemporaryDirectory());
+        $plugin = $this->getPlugin($fileSystem);
         $fileSystem->write(self::INDEX_FILE, json_encode(["rewrite" => "me"]));
 
-        $this->invokePrivateMethod($fileSystem, "writeIndex", [self::INNER_INDEX_FILE, $expected]);
+        $this->invokePrivateMethod($plugin, "writeIndex", [self::INDEX_FILE, $expected]);
         $this->assertEquals(
             $expected,
             json_decode($fileSystem->read(self::INDEX_FILE), true)
@@ -27,10 +27,12 @@ class IndexWriteTest extends FileSystemTestCase
     public function testReadIndexWorksWithNonexistentIndexFile()
     {
         $fileSystem = $this->getFileSystem($this->getTemporaryDirectory());
+        $plugin = $this->getPlugin($fileSystem);
 
+        $this->invokePrivateMethod($plugin, "writeIndex", [self::INDEX_FILE, ["te" => "st"]]);
         $this->assertEquals(
-            [],
-            $this->invokePrivateMethod($fileSystem, "readIndex", [self::INDEX_FILE])
+            '{"te":"st"}',
+            $fileSystem->read(self::INDEX_FILE)
         );
     }
 
@@ -38,10 +40,11 @@ class IndexWriteTest extends FileSystemTestCase
     {
         $tempDir = $this->getTemporaryDirectory();
         $fileSystem = $this->getFileSystem($tempDir);
-        $fileSystem->write(self::INDEX_FILE, null);
-        chmod("{$tempDir}/". self::INNER_INDEX_FILE, 0000);
+        $plugin = $this->getPlugin($fileSystem);
 
+        $fileSystem->write(self::INDEX_FILE, null);
+        chmod("{$tempDir}/". self::INDEX_FILE, 0000);
         $this->setExpectedException(IndexWriteException::class);
-        $this->invokePrivateMethod($fileSystem, "writeIndex", [self::INNER_INDEX_FILE, []]);
+        $this->invokePrivateMethod($plugin, "writeIndex", [self::INDEX_FILE, []]);
     }
 }

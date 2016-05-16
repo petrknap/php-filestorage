@@ -1,13 +1,11 @@
 <?php
 
-namespace PetrKnap\Php\FileStorage\Test\FileSystem;
+namespace PetrKnap\Php\FileStorage\Test\Plugin\OnSiteIndexPlugin;
 
-use League\Flysystem\Adapter\Local;
-use League\Flysystem\Config;
-use PetrKnap\Php\FileStorage\FileSystem;
-use PetrKnap\Php\FileStorage\Test\FileSystemTestCase;
+use PetrKnap\Php\FileStorage\Plugin\OnSiteIndexPlugin;
+use PetrKnap\Php\FileStorage\Test\Plugin\OnSiteIndexPluginTestCase;
 
-class IndexTest extends FileSystemTestCase
+class IndexTest extends OnSiteIndexPluginTestCase
 {
     /**
      * @dataProvider getPathsToIndexFilesDataProvider
@@ -17,10 +15,11 @@ class IndexTest extends FileSystemTestCase
     public function testGetPathsToIndexFilesWorks($expectedPathsToIndexFiles, $innerPath)
     {
         $fileSystem = $this->getFileSystem($this->getTemporaryDirectory());
+        $plugin = $this->getPlugin($fileSystem);
 
         $this->assertEquals(
             $expectedPathsToIndexFiles,
-            $this->invokePrivateMethod($fileSystem, "getPathsToIndexFiles", [$innerPath])
+            $this->invokePrivateMethod($plugin, "getPathsToIndexFiles", [$innerPath])
         );
     }
 
@@ -29,10 +28,10 @@ class IndexTest extends FileSystemTestCase
         return [
             [
                 [
-                    FileSystem::PATH_TO_INDEXES . "/a/b/c/d/" . FileSystem::INDEX_FILE,
-                    FileSystem::PATH_TO_INDEXES . "/a/b/c/" . FileSystem::INDEX_FILE,
-                    FileSystem::PATH_TO_INDEXES . "/a/b/" . FileSystem::INDEX_FILE,
-                    FileSystem::PATH_TO_INDEXES . "/a/" . FileSystem::INDEX_FILE
+                    OnSiteIndexPlugin::PATH_TO_INDEXES . "/a/b/c/d/" . OnSiteIndexPlugin::INDEX_FILE,
+                    OnSiteIndexPlugin::PATH_TO_INDEXES . "/a/b/c/" . OnSiteIndexPlugin::INDEX_FILE,
+                    OnSiteIndexPlugin::PATH_TO_INDEXES . "/a/b/" . OnSiteIndexPlugin::INDEX_FILE,
+                    OnSiteIndexPlugin::PATH_TO_INDEXES . "/a/" . OnSiteIndexPlugin::INDEX_FILE
                 ],
                 "/a/b/c/d/e-f.g"
             ]
@@ -51,12 +50,12 @@ class IndexTest extends FileSystemTestCase
     public function testAddPathToIndexWorks($root, $pathToIndex, $expectedIndexContent, $unused, $path, $innerPath)
     {
         $fileSystem = $this->getFileSystem($root);
-        $adapter = new Local($root);
+        $plugin = $this->getPlugin($fileSystem);
 
-        $this->invokePrivateMethod($fileSystem, "addPathToIndex", [$path, $innerPath]);
+        $plugin->addPathToIndex($path, $innerPath);
 
-        $this->assertTrue($adapter->has($pathToIndex));
-        $this->assertEquals($expectedIndexContent, $adapter->read($pathToIndex)["contents"]);
+        $this->assertTrue($fileSystem->has($pathToIndex));
+        $this->assertEquals($expectedIndexContent, $fileSystem->read($pathToIndex));
     }
 
     /**
@@ -71,16 +70,16 @@ class IndexTest extends FileSystemTestCase
     public function testRemovePathFromIndexWorks($root, $pathToIndex, $initIndexContent, $expectedIndexContent, $path, $innerPath)
     {
         $fileSystem = $this->getFileSystem($root);
-        $adapter = new Local($root);
-        if (!$adapter->has($pathToIndex)) {
-            $adapter->write($pathToIndex, $initIndexContent, new Config());
+        $plugin = $this->getPlugin($fileSystem);
+        if (!$fileSystem->has($pathToIndex)) {
+            $fileSystem->write($pathToIndex, $initIndexContent);
         } else {
-            $adapter->update($pathToIndex, $initIndexContent, new Config());
+            $fileSystem->update($pathToIndex, $initIndexContent);
         }
 
-        $this->invokePrivateMethod($fileSystem, "removePathFromIndex", [$path, $innerPath]);
+        $plugin->removePathFromIndex($path, $innerPath);
 
-        $this->assertEquals($expectedIndexContent, $adapter->read($pathToIndex)["contents"]);
+        $this->assertEquals($expectedIndexContent, $fileSystem->read($pathToIndex));
     }
 
     public function addPathToIndexAndRemoveDataFromIndexDataProvider()
@@ -91,7 +90,7 @@ class IndexTest extends FileSystemTestCase
         return [
             [
                 $root,
-                FileSystem::PATH_TO_INDEXES . "/a/b/c/d/" . FileSystem::INDEX_FILE,
+                OnSiteIndexPlugin::PATH_TO_INDEXES . "/a/b/c/d/" . OnSiteIndexPlugin::INDEX_FILE,
                 '{"files":{"\/this is long filename.txt":1}}',
                 '{"files":[]}',
                 $path,
@@ -99,7 +98,7 @@ class IndexTest extends FileSystemTestCase
             ],
             [
                 $root,
-                FileSystem::PATH_TO_INDEXES . "/a/b/c/" . FileSystem::INDEX_FILE,
+                OnSiteIndexPlugin::PATH_TO_INDEXES . "/a/b/c/" . OnSiteIndexPlugin::INDEX_FILE,
                 '{"files":{"\/this is lon":2}}',
                 '{"files":{"\/this is lon":1}}',
                 $path,
@@ -107,7 +106,7 @@ class IndexTest extends FileSystemTestCase
             ],
             [
                 $root,
-                FileSystem::PATH_TO_INDEXES . "/a/b/" . FileSystem::INDEX_FILE,
+                OnSiteIndexPlugin::PATH_TO_INDEXES . "/a/b/" . OnSiteIndexPlugin::INDEX_FILE,
                 '{"files":{"\/this is":3}}',
                 '{"files":{"\/this is":2}}',
                 $path,
@@ -115,12 +114,17 @@ class IndexTest extends FileSystemTestCase
             ],
             [
                 $root,
-                FileSystem::PATH_TO_INDEXES . "/a/" . FileSystem::INDEX_FILE,
+                OnSiteIndexPlugin::PATH_TO_INDEXES . "/a/" . OnSiteIndexPlugin::INDEX_FILE,
                 '{"files":{"\/thi":4}}',
                 '{"files":{"\/thi":3}}',
                 $path,
                 $innerPath
             ]
         ];
+    }
+
+    public function testGetPathsFromIndexWorks()
+    {
+        $this->markTestSkipped();
     }
 }

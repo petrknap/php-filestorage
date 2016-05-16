@@ -2,6 +2,7 @@
 
 namespace PetrKnap\Php\FileStorage\Test\FileSystem;
 
+use PetrKnap\Php\FileStorage\FileSystem;
 use PetrKnap\Php\FileStorage\Test\FileSystemTestCase;
 
 class InnerPathTest extends FileSystemTestCase
@@ -13,11 +14,9 @@ class InnerPathTest extends FileSystemTestCase
      */
     public function testGetInnerPathWorks($expectedInnerPath, $path)
     {
-        $fileSystem = $this->getFileSystem($this->getTemporaryDirectory());
-
         $this->assertEquals(
             $expectedInnerPath,
-            $this->invokePrivateMethod($fileSystem, "getInnerPath", [$path])
+            FileSystem::getInnerPath($path)
         );
     }
 
