@@ -7,6 +7,13 @@ use League\Flysystem\PluginInterface;
 use Nunzion\Expect;
 use PetrKnap\Php\FileStorage\FileSystem;
 
+/**
+ * @author   Petr Knap <dev@petrknap.cz>
+ * @since    2016-05-17
+ * @category FileStorage
+ * @package  PetrKnap\Php\FileStorage\Plugin
+ * @license  https://github.com/petrknap/php-filestorage/blob/master/LICENSE MIT
+ */
 abstract class AbstractIndexPlugin implements PluginInterface
 {
     /**
