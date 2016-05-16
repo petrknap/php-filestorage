@@ -260,10 +260,7 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
      */
     public function getPathsFromIndex($directory, $recursive)
     {
-        if (empty($directory)) {
-            $directory = "/";
-        }
-        if ($directory === "/" && $recursive) {
+        if ($directory == "/" && $recursive) {
             return iterator_to_array($this->getPathsFromIndexBackward($directory, $recursive));
         } else {
             return iterator_to_array($this->getPathsFromIndexForward($directory, $recursive));
