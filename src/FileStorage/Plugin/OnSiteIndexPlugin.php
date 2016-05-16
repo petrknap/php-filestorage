@@ -9,6 +9,13 @@ use PetrKnap\Php\FileStorage\Plugin\Exception\IndexDecodeException;
 use PetrKnap\Php\FileStorage\Plugin\Exception\IndexReadException;
 use PetrKnap\Php\FileStorage\Plugin\Exception\IndexWriteException;
 
+/**
+ * @author   Petr Knap <dev@petrknap.cz>
+ * @since    2016-05-17
+ * @category FileStorage
+ * @package  PetrKnap\Php\FileStorage\Plugin
+ * @license  https://github.com/petrknap/php-filestorage/blob/master/LICENSE MIT
+ */
 class OnSiteIndexPlugin extends AbstractIndexPlugin
 {
     const PATH_TO_INDEXES = "/indexes";
