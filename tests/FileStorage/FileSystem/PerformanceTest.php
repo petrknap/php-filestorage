@@ -6,7 +6,7 @@ use PetrKnap\Php\FileStorage\FileSystem;
 use PetrKnap\Php\FileStorage\Test\FileSystemTestCase;
 use PetrKnap\Php\Profiler\SimpleProfiler;
 
-class PerformanceAbstractTest extends FileSystemTestCase
+class PerformanceTest extends FileSystemTestCase
 {
     /**
      * @dataProvider performanceIsNotIntrusiveDataProvider

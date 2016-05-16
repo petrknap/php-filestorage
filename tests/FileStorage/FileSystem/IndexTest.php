@@ -7,7 +7,7 @@ use League\Flysystem\Config;
 use PetrKnap\Php\FileStorage\FileSystem;
 use PetrKnap\Php\FileStorage\Test\FileSystemTestCase;
 
-class IndexTestCase extends FileSystemTestCase
+class IndexTest extends FileSystemTestCase
 {
     /**
      * @dataProvider getPathsToIndexFilesDataProvider

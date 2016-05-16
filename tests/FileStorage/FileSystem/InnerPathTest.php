@@ -4,7 +4,7 @@ namespace PetrKnap\Php\FileStorage\Test\FileSystem;
 
 use PetrKnap\Php\FileStorage\Test\FileSystemTestCase;
 
-class InnerPathTestCase extends FileSystemTestCase
+class InnerPathTest extends FileSystemTestCase
 {
     /**
      * @dataProvider getInnerPathWorksDataProvider

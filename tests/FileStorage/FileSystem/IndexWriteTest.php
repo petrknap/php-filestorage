@@ -6,7 +6,7 @@ use PetrKnap\Php\FileStorage\Exception\IndexWriteException;
 use PetrKnap\Php\FileStorage\FileSystem;
 use PetrKnap\Php\FileStorage\Test\FileSystemTestCase;
 
-class IndexWriteTestCase extends FileSystemTestCase
+class IndexWriteTest extends FileSystemTestCase
 {
     const INDEX_FILE = FileSystem::INDEX_FILE;
     const INNER_INDEX_FILE = "/71/82/20/7c/ea/19/51/62/77/f7/14/56/32/4b/f1/3d/fa/c3/1b/79-9e743aa713dcae5405f290e3db88178b.json";
