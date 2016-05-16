@@ -13,36 +13,39 @@ class IndexWriteTest extends OnSiteIndexPluginTestCase
     public function testWriteIndexWorksWithExistentIndexFile()
     {
         $expected = ["key" => "value"];
-        $fileSystem = $this->getFileSystem($this->getTemporaryDirectory());
-        $plugin = $this->getPlugin($fileSystem);
-        $fileSystem->write(self::INDEX_FILE, json_encode(["rewrite" => "me"]));
+        $adapter = $this->getAdapter($this->getTemporaryDirectory());
+        $innerFileSystem = $this->getInnerFileSystem($adapter);
+        $plugin = $this->getPlugin($adapter);
+        $innerFileSystem->write(self::INDEX_FILE, json_encode(["rewrite" => "me"]));
 
         $this->invokePrivateMethod($plugin, "writeIndex", [self::INDEX_FILE, $expected]);
         $this->assertEquals(
             $expected,
-            json_decode($fileSystem->read(self::INDEX_FILE), true)
+            json_decode($innerFileSystem->read(self::INDEX_FILE), true)
         );
     }
 
     public function testReadIndexWorksWithNonexistentIndexFile()
     {
-        $fileSystem = $this->getFileSystem($this->getTemporaryDirectory());
-        $plugin = $this->getPlugin($fileSystem);
+        $adapter = $this->getAdapter($this->getTemporaryDirectory());
+        $innerFileSystem = $this->getInnerFileSystem($adapter);
+        $plugin = $this->getPlugin($adapter);
 
         $this->invokePrivateMethod($plugin, "writeIndex", [self::INDEX_FILE, ["te" => "st"]]);
         $this->assertEquals(
             '{"te":"st"}',
-            $fileSystem->read(self::INDEX_FILE)
+            $innerFileSystem->read(self::INDEX_FILE)
         );
     }
 
     public function testWriteIndexDoesNotWorkWithInaccessibleIndexFile()
     {
         $tempDir = $this->getTemporaryDirectory();
-        $fileSystem = $this->getFileSystem($tempDir);
-        $plugin = $this->getPlugin($fileSystem);
+        $adapter = $this->getAdapter($tempDir);
+        $innerFileSystem = $this->getInnerFileSystem($adapter);
+        $plugin = $this->getPlugin($adapter);
 
-        $fileSystem->write(self::INDEX_FILE, null);
+        $innerFileSystem->write(self::INDEX_FILE, null);
         chmod("{$tempDir}/". self::INDEX_FILE, 0000);
         $this->setExpectedException(IndexWriteException::class);
         $this->invokePrivateMethod($plugin, "writeIndex", [self::INDEX_FILE, []]);

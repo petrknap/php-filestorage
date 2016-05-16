@@ -4,6 +4,8 @@ namespace PetrKnap\Php\FileStorage\Plugin;
 
 use League\Flysystem\FilesystemInterface;
 use League\Flysystem\PluginInterface;
+use Nunzion\Expect;
+use PetrKnap\Php\FileStorage\FileSystem;
 
 abstract class AbstractIndexPlugin implements PluginInterface
 {
@@ -13,7 +15,7 @@ abstract class AbstractIndexPlugin implements PluginInterface
     protected $secondArgument;
 
     /**
-     * @var FilesystemInterface
+     * @var FileSystem
      */
     protected $fileSystem;
 
@@ -57,6 +59,8 @@ abstract class AbstractIndexPlugin implements PluginInterface
      */
     public function setFilesystem(FilesystemInterface $fileSystem)
     {
+        Expect::that($fileSystem)->isInstanceOf(FileSystem::class);
+
         $this->fileSystem = $fileSystem;
     }
 

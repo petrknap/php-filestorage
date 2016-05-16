@@ -14,10 +14,11 @@ class IndexReadTest extends OnSiteIndexPluginTestCase
     public function testReadIndexWorksWithExistentIndexFile()
     {
         $expected = ["key" => "value"];
-        $fileSystem = $this->getFileSystem($this->getTemporaryDirectory());
-        $plugin = $this->getPlugin($fileSystem);
+        $adapter = $this->getAdapter($this->getTemporaryDirectory());
+        $innerFileSystem = $this->getInnerFileSystem($adapter);
+        $plugin = $this->getPlugin($adapter);
 
-        $fileSystem->write(self::INDEX_FILE, json_encode($expected));
+        $innerFileSystem->write(self::INDEX_FILE, json_encode($expected));
         $this->assertEquals(
             $expected,
             $this->invokePrivateMethod($plugin, "readIndex", [self::INDEX_FILE])
@@ -26,8 +27,8 @@ class IndexReadTest extends OnSiteIndexPluginTestCase
 
     public function testReadIndexWorksWithNonexistentIndexFile()
     {
-        $fileSystem = $this->getFileSystem($this->getTemporaryDirectory());
-        $plugin = $this->getPlugin($fileSystem);
+        $adapter = $this->getAdapter($this->getTemporaryDirectory());
+        $plugin = $this->getPlugin($adapter);
 
         $this->assertEquals(
             [],
@@ -37,11 +38,11 @@ class IndexReadTest extends OnSiteIndexPluginTestCase
 
     public function testReadIndexDoesNotWorkWithCorruptedIndexFile()
     {
-        $tempDir = $this->getTemporaryDirectory();
-        $fileSystem = $this->getFileSystem($tempDir);
-        $plugin = $this->getPlugin($fileSystem);
+        $adapter = $this->getAdapter($this->getTemporaryDirectory());
+        $innerFileSystem = $this->getInnerFileSystem($adapter);
+        $plugin = $this->getPlugin($adapter);
 
-        $fileSystem->write(self::INDEX_FILE, null);
+        $innerFileSystem->write(self::INDEX_FILE, null);
         $this->setExpectedException(IndexDecodeException::class);
         $this->invokePrivateMethod($plugin, "readIndex", [self::INDEX_FILE]);
     }
@@ -49,10 +50,11 @@ class IndexReadTest extends OnSiteIndexPluginTestCase
     public function testReadIndexDoesNotWorkWithInaccessibleIndexFile()
     {
         $tempDir = $this->getTemporaryDirectory();
-        $fileSystem = $this->getFileSystem($tempDir);
-        $plugin = $this->getPlugin($fileSystem);
+        $adapter = $this->getAdapter($tempDir);
+        $innerFileSystem = $this->getInnerFileSystem($adapter);
+        $plugin = $this->getPlugin($adapter);
 
-        $fileSystem->write(self::INDEX_FILE, null);
+        $innerFileSystem->write(self::INDEX_FILE, null);
         chmod("{$tempDir}/". self::INDEX_FILE, 0000);
         $this->setExpectedException(IndexReadException::class);
         $this->invokePrivateMethod($plugin, "readIndex", [self::INDEX_FILE]);

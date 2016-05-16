@@ -2,38 +2,32 @@
 
 namespace PetrKnap\Php\FileStorage\Test\Plugin\OnSiteIndexPlugin;
 
-use League\Flysystem\FilesystemInterface;
-use PetrKnap\Php\FileStorage\Plugin\OnSiteIndexPlugin;
+use League\Flysystem\AdapterInterface;
+use PetrKnap\Php\FileStorage\FileSystem;
 use PetrKnap\Php\FileStorage\Test\Plugin\OnSiteIndexPluginTestCase;
 
 class GetPathsFromIndexTest extends OnSiteIndexPluginTestCase
 {
     /**
-     * @var FilesystemInterface
+     * @var AdapterInterface
      */
-    private static $fileSystem;
-
-    /**
-     * @var OnSiteIndexPlugin
-     */
-    private static $plugin;
+    private static $adapter;
 
     public static function setUpBeforeClass()
     {
         parent::setUpBeforeClass();
 
-        self::$fileSystem = self::getFileSystem(self::getTemporaryDirectory());
-        self::$plugin = self::getPlugin(self::$fileSystem);
+        self::$adapter = self::getAdapter(self::getTemporaryDirectory());
+
+        $outerFileSystem = self::getOuterFileSystem(self::$adapter);
 
         for ($d1 = 0; $d1 < 20; $d1++) {
             for ($f = 0; $f < 2; $f++) {
                 $path = "/Directory #{$d1}/File #{$f}.txt";
-                self::$fileSystem->write($path, "This is file!");
-                self::invokePrivateMethod(self::$plugin, "addPathToIndex", [$path, $path]);
+                $outerFileSystem->write($path, "This is file!");
                 for ($d2 = 0; $d2 < 5; $d2++) {
                     $path = "/Directory #{$d1}/Directory #{$d2}/File #{$f}.txt";
-                    self::$fileSystem->write($path, "This is file!");
-                    self::invokePrivateMethod(self::$plugin, "addPathToIndex", [$path, $path]);
+                    $outerFileSystem->write($path, "This is file!");
                 }
             }
         }
@@ -42,7 +36,7 @@ class GetPathsFromIndexTest extends OnSiteIndexPluginTestCase
     public function testGetPathsFromIndexBackwardWorks()
     {
         $files = $this->invokePrivateMethod(
-            self::$plugin,
+            $this->getPlugin(self::$adapter),
             "getPathsFromIndexBackward",
             [
                 "/",
@@ -74,7 +68,7 @@ class GetPathsFromIndexTest extends OnSiteIndexPluginTestCase
     public function testGetPathsFromIndexForwardWorks($directory, $recursive, $dirnamePattern, $countOfFiles)
     {
         $files = $this->invokePrivateMethod(
-            self::$plugin,
+            $this->getPlugin(self::$adapter),
             "getPathsFromIndexForward",
             [
                 $directory,
@@ -112,12 +106,12 @@ class GetPathsFromIndexTest extends OnSiteIndexPluginTestCase
 
     public function testGetPathsFromIndexWorks()
     {
-        $fileSystem = $this->getFileSystem($this->getTemporaryDirectory());
-        $plugin = $this->getPlugin($fileSystem);
+        $adapter = $this->getAdapter($this->getTemporaryDirectory());
+        $outerFileSystem = $this->getOuterFileSystem($adapter);
+        $plugin = $this->getPlugin($adapter);
         for ($i = 0; $i < 5; $i++) {
             $path = "/File #{$i}.txt";
-            $fileSystem->write($path, null);
-            $plugin->addPathToIndex($path, $path);
+            $outerFileSystem->write($path, null);
         }
 
         $files = $plugin->getPathsFromIndex("", false);

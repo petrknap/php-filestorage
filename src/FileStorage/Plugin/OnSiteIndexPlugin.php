@@ -122,36 +122,33 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
     private function getPathsFromIndexForward($directory, $recursive)
     {
         $browseIndexTree = function($path, $deep = 1) use ($directory, $recursive, &$browseIndexTree) {
-            $indexFile = null;
             $subPaths = [];
             $directoryFound = false;
             foreach ($this->getInnerFileSystem()->listContents($path, false) as $content) {
-                if ($content["type"] == "dir") {
+                if (strlen($content["basename"]) == 2) {
                     $subPaths[] = $content["path"];
                 } else {
-                    $indexFile = $content["path"];
-                }
-            };
-            $index = $this->readIndex($indexFile);
-            if (empty($subPaths)) {
-                yield $index;
-            } else {
-                $data = (array)@$index[self::INDEX_FILE__DATA];
-                foreach ($data as $knownPath => $unused) {
-                    if (strlen($directory) >= strlen($knownPath)) {
-                        $directoryFound = strpos($directory, $knownPath) === 0;
+                    $index = $this->readIndex($content["path"]);
+                    if ($deep == 20) {
+                        yield $index;
                     } else {
-                        $slashedDirectory = str_replace("//", "/", "$directory/");
-                        if (strpos($knownPath, $slashedDirectory) === 0)
-                        {
-                            $directoryFound = $recursive || strrpos("/", $knownPath) == strrpos("/", $slashedDirectory);
+                        foreach ($index[self::INDEX_FILE__DATA] as $knownPath => $unused) {
+                            if (strlen($directory) >= strlen($knownPath)) {
+                                $directoryFound = strpos($directory, $knownPath) === 0;
+                            } else {
+                                $slashedDirectory = str_replace("//", "/", "$directory/");
+                                if (strpos($knownPath, $slashedDirectory) === 0)
+                                {
+                                    $directoryFound = $recursive || strrpos("/", $knownPath) == strrpos("/", $slashedDirectory);
+                                }
+                            }
+                            if ($directoryFound) {
+                                break;
+                            }
                         }
                     }
-                    if ($directoryFound) {
-                        break;
-                    }
                 }
-            }
+            };
             if ($directoryFound || $deep == 1) {
                 foreach ($subPaths as $subPath) {
                     foreach($browseIndexTree($subPath, $deep + 1) as $index) {
@@ -263,7 +260,10 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
      */
     public function getPathsFromIndex($directory, $recursive)
     {
-        if (($directory === "/" || $directory == "") && $recursive) {
+        if (empty($directory)) {
+            $directory = "/";
+        }
+        if ($directory === "/" && $recursive) {
             return iterator_to_array($this->getPathsFromIndexBackward($directory, $recursive));
         } else {
             return iterator_to_array($this->getPathsFromIndexForward($directory, $recursive));

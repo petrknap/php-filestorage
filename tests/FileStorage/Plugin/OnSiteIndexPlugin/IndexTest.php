@@ -14,8 +14,8 @@ class IndexTest extends OnSiteIndexPluginTestCase
      */
     public function testGetPathsToIndexFilesWorks($expectedPathsToIndexFiles, $innerPath)
     {
-        $fileSystem = $this->getFileSystem($this->getTemporaryDirectory());
-        $plugin = $this->getPlugin($fileSystem);
+        $adapter = $this->getAdapter($this->getTemporaryDirectory());
+        $plugin = $this->getPlugin($adapter);
 
         $this->assertEquals(
             $expectedPathsToIndexFiles,
@@ -49,13 +49,14 @@ class IndexTest extends OnSiteIndexPluginTestCase
      */
     public function testAddPathToIndexWorks($root, $pathToIndex, $expectedIndexContent, $unused, $path, $innerPath)
     {
-        $fileSystem = $this->getFileSystem($root);
-        $plugin = $this->getPlugin($fileSystem);
+        $adapter = $this->getAdapter($root);
+        $innerFileSystem = $this->getInnerFileSystem($adapter);
+        $plugin = $this->getPlugin($adapter);
 
         $plugin->addPathToIndex($path, $innerPath);
 
-        $this->assertTrue($fileSystem->has($pathToIndex));
-        $this->assertEquals($expectedIndexContent, $fileSystem->read($pathToIndex));
+        $this->assertTrue($innerFileSystem->has($pathToIndex));
+        $this->assertEquals($expectedIndexContent, $innerFileSystem->read($pathToIndex));
     }
 
     /**
@@ -69,17 +70,18 @@ class IndexTest extends OnSiteIndexPluginTestCase
      */
     public function testRemovePathFromIndexWorks($root, $pathToIndex, $initIndexContent, $expectedIndexContent, $path, $innerPath)
     {
-        $fileSystem = $this->getFileSystem($root);
-        $plugin = $this->getPlugin($fileSystem);
-        if (!$fileSystem->has($pathToIndex)) {
-            $fileSystem->write($pathToIndex, $initIndexContent);
+        $adapter = $this->getAdapter($root);
+        $innerFileSystem = $this->getInnerFileSystem($adapter);
+        $plugin = $this->getPlugin($adapter);
+        if (!$innerFileSystem->has($pathToIndex)) {
+            $innerFileSystem->write($pathToIndex, $initIndexContent);
         } else {
-            $fileSystem->update($pathToIndex, $initIndexContent);
+            $innerFileSystem->update($pathToIndex, $initIndexContent);
         }
 
         $plugin->removePathFromIndex($path, $innerPath);
 
-        $this->assertEquals($expectedIndexContent, $fileSystem->read($pathToIndex));
+        $this->assertEquals($expectedIndexContent, $innerFileSystem->read($pathToIndex));
     }
 
     public function addPathToIndexAndRemoveDataFromIndexDataProvider()
@@ -121,10 +123,5 @@ class IndexTest extends OnSiteIndexPluginTestCase
                 $innerPath
             ]
         ];
-    }
-
-    public function testGetPathsFromIndexWorks()
-    {
-        $this->markTestSkipped();
     }
 }
