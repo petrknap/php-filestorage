@@ -215,6 +215,17 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
             }
         }
     }
+    
+    /**
+     * @param string $path
+     * @param int $countOfIndexes
+     * @param int $index
+     * @return string
+     */
+    private function getIndexKey($path, $countOfIndexes, $index)
+    {
+        return substr($path, 0, $index == 0 ? strlen($path) : ($countOfIndexes - $index) * 4);
+    }
 
     /**
      * @inheritdoc
@@ -223,7 +234,6 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
     {
         $indexes = $this->getPathsToIndexFiles($innerPath);
         $countOfIndexes = count($indexes);
-        $blockSize = 4;
 
         for ($i = 0; $i < $countOfIndexes; $i++) {
             $index = $this->readIndex($indexes[$i]);
@@ -231,8 +241,9 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
             if (!$indexData) {
                 $indexData = [];
             }
-            $blockData = &$indexData[substr($path, 0, $i == 0 ? strlen($path) : ($countOfIndexes - $i) * $blockSize)];
-            $blockData++;
+            $indexKey = $this->getIndexKey($path, $countOfIndexes, $i);
+            $key = &$indexData[$indexKey];
+            $key++;
             $this->writeIndex($indexes[$i], $index);
         }
     }
@@ -244,7 +255,6 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
     {
         $indexes = $this->getPathsToIndexFiles($innerPath);
         $countOfIndexes = count($indexes);
-        $keyBlockSize = 4;
 
         for ($i = 0; $i < $countOfIndexes; $i++) {
             $index = $this->readIndex($indexes[$i]);
@@ -252,11 +262,11 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
             if (!$indexData) {
                 $indexData = [];
             }
-            $keyBlock = substr($path, 0, $i == 0 ? strlen($path) : ($countOfIndexes - $i) * $keyBlockSize);
-            $key = &$indexData[$keyBlock];
-            $key--;
+            $indexKey = $this->getIndexKey($path, $countOfIndexes, $i);
+            $key = &$indexData[$indexKey];
+            $key++;
             if ($key <= 0) {
-                unset($indexData[$keyBlock]);
+                unset($indexData[$indexKey]);
             }
             $this->writeIndex($indexes[$i], $index);
         }
