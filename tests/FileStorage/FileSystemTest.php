@@ -1,11 +1,10 @@
 <?php
 
-namespace PetrKnap\Php\FileStorage\Test\FileSystem;
+namespace PetrKnap\Php\FileStorage\Test;
 
 use PetrKnap\Php\FileStorage\FileSystem;
-use PetrKnap\Php\FileStorage\Test\FileSystemTestCase;
 
-class InnerPathTest extends FileSystemTestCase
+class FileSystemTest extends AbstractTestCase
 {
     /**
      * @dataProvider getInnerPathWorksDataProvider

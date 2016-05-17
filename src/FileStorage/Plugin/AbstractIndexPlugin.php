@@ -7,6 +7,13 @@ use League\Flysystem\PluginInterface;
 use Nunzion\Expect;
 use PetrKnap\Php\FileStorage\FileSystem;
 
+/**
+ * @author   Petr Knap <dev@petrknap.cz>
+ * @since    2016-05-17
+ * @category FileStorage
+ * @package  PetrKnap\Php\FileStorage\Plugin
+ * @license  https://github.com/petrknap/php-filestorage/blob/master/LICENSE MIT
+ */
 abstract class AbstractIndexPlugin implements PluginInterface
 {
     /**
@@ -36,7 +43,7 @@ abstract class AbstractIndexPlugin implements PluginInterface
 
     public static function register(FilesystemInterface $outerFileSystem, $secondArgument)
     {
-        foreach (["addPathToIndex", "removePathFromIndex", "getPathsFromIndex"] as $method) {
+        foreach (["addPathToIndex", "removePathFromIndex", "getMetadataFromIndex"] as $method) {
             $outerFileSystem->addPlugin(new static($method, $secondArgument));
         }
     }
@@ -86,5 +93,5 @@ abstract class AbstractIndexPlugin implements PluginInterface
      * @param bool $recursive
      * @return array
      */
-    abstract public function getPathsFromIndex($directory, $recursive);
+    abstract public function getMetadataFromIndex($directory, $recursive);
 }

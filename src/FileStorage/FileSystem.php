@@ -98,9 +98,9 @@ class FileSystem implements FilesystemInterface
     /**
      * @inheritdoc
      */
-    public function listContents($directory = "", $recursive = false)
+    public function listContents($directory = "/", $recursive = false)
     {
-        return $this->invokePlugin("getPathsFromIndex", [$directory, $recursive], $this);
+        return $this->invokePlugin("getMetadataFromIndex", [$directory, $recursive], $this);
     }
 
     /**

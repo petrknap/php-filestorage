@@ -2,10 +2,10 @@
     <testsuites>
         <testsuite name="main">
             <directory suffix="Test.php">./tests</directory>
-            <exclude>./tests/FileStorage/FileSystem/PerformanceTest.php</exclude>
+            <exclude>./tests/FileStorage/PerformanceTest.php</exclude>
         </testsuite>
         <testsuite name="performance">
-            <file>./tests/FileStorage/FileSystem/PerformanceTest.php</file>
+            <file>./tests/FileStorage/PerformanceTest.php</file>
         </testsuite>
     </testsuites>
     <logging>

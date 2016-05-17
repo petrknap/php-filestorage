@@ -9,6 +9,13 @@ use PetrKnap\Php\FileStorage\Plugin\Exception\IndexDecodeException;
 use PetrKnap\Php\FileStorage\Plugin\Exception\IndexReadException;
 use PetrKnap\Php\FileStorage\Plugin\Exception\IndexWriteException;
 
+/**
+ * @author   Petr Knap <dev@petrknap.cz>
+ * @since    2016-05-17
+ * @category FileStorage
+ * @package  PetrKnap\Php\FileStorage\Plugin
+ * @license  https://github.com/petrknap/php-filestorage/blob/master/LICENSE MIT
+ */
 class OnSiteIndexPlugin extends AbstractIndexPlugin
 {
     const PATH_TO_INDEXES = "/indexes";
@@ -119,7 +126,7 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
      * @param bool $recursive
      * @return \Generator
      */
-    private function getPathsFromIndexForward($directory, $recursive)
+    private function getMetadataFromIndexForward($directory, $recursive)
     {
         $browseIndexTree = function($path, $deep = 1) use ($directory, $recursive, &$browseIndexTree) {
             $subPaths = [];
@@ -176,7 +183,7 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
      * @param bool $recursive
      * @return \Generator
      */
-    private function getPathsFromIndexBackward($directory, $recursive)
+    private function getMetadataFromIndexBackward($directory, $recursive)
     {
         Expect::that($directory)->equals("/");
         Expect::that($recursive)->equals(true);
@@ -258,15 +265,15 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
     /**
      * @inheritdoc
      */
-    public function getPathsFromIndex($directory, $recursive)
+    public function getMetadataFromIndex($directory, $recursive)
     {
-        if (empty($directory)) {
-            $directory = "/";
-        }
-        if ($directory === "/" && $recursive) {
-            return iterator_to_array($this->getPathsFromIndexBackward($directory, $recursive));
+        Expect::that($directory)->isString();
+        Expect::that($directory)->isNotEmpty();
+
+        if ($directory == "/" && $recursive) {
+            return iterator_to_array($this->getMetadataFromIndexBackward($directory, $recursive));
         } else {
-            return iterator_to_array($this->getPathsFromIndexForward($directory, $recursive));
+            return iterator_to_array($this->getMetadataFromIndexForward($directory, $recursive));
         }
     }
 }
