@@ -2,10 +2,11 @@
 
 namespace PetrKnap\Php\FileStorage\Test;
 
+use League\Flysystem\Adapter\Local;
 use PetrKnap\Php\FileStorage\FileSystem;
 use PetrKnap\Php\Profiler\SimpleProfiler;
 
-class PerformanceTest extends FileSystemTestCase
+class PerformanceTest extends AbstractTestCase
 {
     /**
      * @dataProvider performanceIsNotIntrusiveDataProvider
@@ -67,7 +68,7 @@ class PerformanceTest extends FileSystemTestCase
         $iMax = 2048;
         $step = 512;
         $output = [];
-        $fileSystem = $this->getFileSystem($this->getTemporaryDirectory());
+        $fileSystem = new FileSystem(new Local($this->getTemporaryDirectory()));
         for ($i = 0; $i < $iMax; $i += $step)
         {
             $output[] = [$fileSystem, $i, $i + $step];
