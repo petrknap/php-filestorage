@@ -5,7 +5,7 @@ namespace PetrKnap\Php\FileStorage\Test\Plugin\OnSiteIndexPlugin;
 use League\Flysystem\AdapterInterface;
 use PetrKnap\Php\FileStorage\Test\Plugin\OnSiteIndexPluginTestCase;
 
-class GetPathsFromIndexTest extends OnSiteIndexPluginTestCase
+class GetMetadataFromIndexTest extends OnSiteIndexPluginTestCase
 {
     /**
      * @var AdapterInterface
@@ -32,11 +32,11 @@ class GetPathsFromIndexTest extends OnSiteIndexPluginTestCase
         }
     }
 
-    public function testGetPathsFromIndexBackwardWorks()
+    public function testGetMetadataFromIndexBackwardWorks()
     {
         $files = $this->invokePrivateMethod(
             $this->getPlugin(self::$adapter),
-            "getPathsFromIndexBackward",
+            "getMetadataFromIndexBackward",
             [
                 "/",
                 true
@@ -58,17 +58,17 @@ class GetPathsFromIndexTest extends OnSiteIndexPluginTestCase
     }
 
     /**
-     * @dataProvider getPathsFromIndexForwardWorksDataAdapter
+     * @dataProvider getMetadataFromIndexForwardWorksDataAdapter
      * @param string $directory
      * @param bool $recursive
      * @param string $dirnamePattern
      * @param int $countOfFiles
      */
-    public function testGetPathsFromIndexForwardWorks($directory, $recursive, $dirnamePattern, $countOfFiles)
+    public function testGetMetadataFromIndexForwardWorks($directory, $recursive, $dirnamePattern, $countOfFiles)
     {
         $files = $this->invokePrivateMethod(
             $this->getPlugin(self::$adapter),
-            "getPathsFromIndexForward",
+            "getMetadataFromIndexForward",
             [
                 $directory,
                 $recursive
@@ -89,7 +89,7 @@ class GetPathsFromIndexTest extends OnSiteIndexPluginTestCase
         $this->assertEquals($countOfFiles, $fileCounter);
     }
 
-    public function getPathsFromIndexForwardWorksDataAdapter()
+    public function getMetadataFromIndexForwardWorksDataAdapter()
     {
         return [
             ["/", false, "/Directory #%d", 0],
@@ -103,7 +103,7 @@ class GetPathsFromIndexTest extends OnSiteIndexPluginTestCase
         ];
     }
 
-    public function testGetPathsFromIndexWorks()
+    public function testGetMetadataFromIndexWorks()
     {
         $adapter = $this->getAdapter($this->getTemporaryDirectory());
         $outerFileSystem = $this->getOuterFileSystem($adapter);
@@ -113,11 +113,11 @@ class GetPathsFromIndexTest extends OnSiteIndexPluginTestCase
             $outerFileSystem->write($path, null);
         }
 
-        $files = $plugin->getPathsFromIndex("/", false);
+        $files = $plugin->getMetadataFromIndex("/", false);
         $this->assertInternalType("array", $files);
         $this->assertCount(5, $files);
 
-        $files = $plugin->getPathsFromIndex("/", true);
+        $files = $plugin->getMetadataFromIndex("/", true);
         $this->assertInternalType("array", $files);
         $this->assertCount(5, $files);
     }

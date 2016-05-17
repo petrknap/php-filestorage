@@ -100,7 +100,7 @@ class FileSystem implements FilesystemInterface
      */
     public function listContents($directory = "/", $recursive = false)
     {
-        return $this->invokePlugin("getPathsFromIndex", [$directory, $recursive], $this);
+        return $this->invokePlugin("getMetadataFromIndex", [$directory, $recursive], $this);
     }
 
     /**

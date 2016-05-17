@@ -43,7 +43,7 @@ abstract class AbstractIndexPlugin implements PluginInterface
 
     public static function register(FilesystemInterface $outerFileSystem, $secondArgument)
     {
-        foreach (["addPathToIndex", "removePathFromIndex", "getPathsFromIndex"] as $method) {
+        foreach (["addPathToIndex", "removePathFromIndex", "getMetadataFromIndex"] as $method) {
             $outerFileSystem->addPlugin(new static($method, $secondArgument));
         }
     }
@@ -93,5 +93,5 @@ abstract class AbstractIndexPlugin implements PluginInterface
      * @param bool $recursive
      * @return array
      */
-    abstract public function getPathsFromIndex($directory, $recursive);
+    abstract public function getMetadataFromIndex($directory, $recursive);
 }

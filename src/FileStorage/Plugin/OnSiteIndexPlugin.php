@@ -126,7 +126,7 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
      * @param bool $recursive
      * @return \Generator
      */
-    private function getPathsFromIndexForward($directory, $recursive)
+    private function getMetadataFromIndexForward($directory, $recursive)
     {
         $browseIndexTree = function($path, $deep = 1) use ($directory, $recursive, &$browseIndexTree) {
             $subPaths = [];
@@ -183,7 +183,7 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
      * @param bool $recursive
      * @return \Generator
      */
-    private function getPathsFromIndexBackward($directory, $recursive)
+    private function getMetadataFromIndexBackward($directory, $recursive)
     {
         Expect::that($directory)->equals("/");
         Expect::that($recursive)->equals(true);
@@ -265,12 +265,15 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
     /**
      * @inheritdoc
      */
-    public function getPathsFromIndex($directory, $recursive)
+    public function getMetadataFromIndex($directory, $recursive)
     {
+        Expect::that($directory)->isString();
+        Expect::that($directory)->isNotEmpty();
+
         if ($directory == "/" && $recursive) {
-            return iterator_to_array($this->getPathsFromIndexBackward($directory, $recursive));
+            return iterator_to_array($this->getMetadataFromIndexBackward($directory, $recursive));
         } else {
-            return iterator_to_array($this->getPathsFromIndexForward($directory, $recursive));
+            return iterator_to_array($this->getMetadataFromIndexForward($directory, $recursive));
         }
     }
 }
