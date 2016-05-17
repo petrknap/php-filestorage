@@ -113,8 +113,11 @@ class GetPathsFromIndexTest extends OnSiteIndexPluginTestCase
             $outerFileSystem->write($path, null);
         }
 
-        $files = $plugin->getPathsFromIndex("", false);
+        $files = $plugin->getPathsFromIndex("/", false);
+        $this->assertInternalType("array", $files);
+        $this->assertCount(5, $files);
 
+        $files = $plugin->getPathsFromIndex("/", true);
         $this->assertInternalType("array", $files);
         $this->assertCount(5, $files);
     }
