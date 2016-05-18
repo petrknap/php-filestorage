@@ -21,7 +21,7 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
     const PATH_TO_INDEXES = "/indexes";
     const INDEX_FILE = "index.json";
     const INDEX_FILE__DATA = "files";
-    
+
     /**
      * @param FilesystemInterface $outerFileSystem
      * @param FilesystemInterface $innerFileSystem
@@ -109,7 +109,7 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
         $innerPath = explode("/", $innerPath);
         $pathsToIndexes = [];
 
-        while(array_pop($innerPath)) {
+        while (array_pop($innerPath)) {
             $indexPath = implode("/", $innerPath);
             if (!empty($indexPath)) {
                 $pathsToIndexes[] = self::PATH_TO_INDEXES . $indexPath . "/" . self::INDEX_FILE;
@@ -128,7 +128,7 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
      */
     private function getMetadataFromIndexForward($directory, $recursive)
     {
-        $browseIndexTree = function($path, $deep = 1) use ($directory, $recursive, &$browseIndexTree) {
+        $browseIndexTree = function ($path, $deep = 1) use ($directory, $recursive, &$browseIndexTree) {
             $subPaths = [];
             $directoryFound = false;
             foreach ($this->getInnerFileSystem()->listContents($path, false) as $content) {
@@ -144,8 +144,7 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
                                 $directoryFound = strpos($directory, $knownPath) === 0;
                             } else {
                                 $slashedDirectory = str_replace("//", "/", "$directory/");
-                                if (strpos($knownPath, $slashedDirectory) === 0)
-                                {
+                                if (strpos($knownPath, $slashedDirectory) === 0) {
                                     $directoryFound = $recursive || strrpos("/", $knownPath) == strrpos("/", $slashedDirectory);
                                 }
                             }
@@ -158,14 +157,14 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
             };
             if ($directoryFound || $deep == 1) {
                 foreach ($subPaths as $subPath) {
-                    foreach($browseIndexTree($subPath, $deep + 1) as $index) {
+                    foreach ($browseIndexTree($subPath, $deep + 1) as $index) {
                         yield $index;
                     }
                 }
             }
         };
 
-        foreach($browseIndexTree(self::PATH_TO_INDEXES) as $index) {
+        foreach ($browseIndexTree(self::PATH_TO_INDEXES) as $index) {
             foreach ($index[self::INDEX_FILE__DATA] as $path => $unused) {
                 $metadata = $this->getOuterFileSystem()->getMetadata($path);
                 if (!$recursive && $metadata["dirname"] != $directory) {
@@ -215,7 +214,7 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
             }
         }
     }
-    
+
     /**
      * @param string $path
      * @param int $countOfIndexes

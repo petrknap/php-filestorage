@@ -46,7 +46,7 @@ class IndexWriteTest extends OnSiteIndexPluginTestCase
         $plugin = $this->getPlugin($adapter);
 
         $innerFileSystem->write(self::INDEX_FILE, null);
-        chmod("{$tempDir}/". self::INDEX_FILE, 0000);
+        chmod("{$tempDir}/" . self::INDEX_FILE, 0000);
         $this->setExpectedException(IndexWriteException::class);
         $this->invokePrivateMethod($plugin, "writeIndex", [self::INDEX_FILE, []]);
     }

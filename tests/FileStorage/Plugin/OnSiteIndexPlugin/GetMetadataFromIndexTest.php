@@ -43,7 +43,7 @@ class GetMetadataFromIndexTest extends OnSiteIndexPluginTestCase
             ]
         );
         $fileCounter = 0;
-        foreach($files as $file) {
+        foreach ($files as $file) {
             $this->assertEquals("file", $file["type"]);
             $this->assertStringMatchesFormat("/Directory #%s/File #%d.txt", $file["path"]);
             $this->assertEquals(time(), $file["timestamp"], "", 120);
