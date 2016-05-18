@@ -21,7 +21,7 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
     const PATH_TO_INDEXES = "/indexes";
     const INDEX_FILE = "index.json";
     const INDEX_FILE__DATA = "files";
-    
+
     /**
      * @param FilesystemInterface $outerFileSystem
      * @param FilesystemInterface $innerFileSystem
@@ -109,7 +109,7 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
         $innerPath = explode("/", $innerPath);
         $pathsToIndexes = [];
 
-        while(array_pop($innerPath)) {
+        while (array_pop($innerPath)) {
             $indexPath = implode("/", $innerPath);
             if (!empty($indexPath)) {
                 $pathsToIndexes[] = self::PATH_TO_INDEXES . $indexPath . "/" . self::INDEX_FILE;
@@ -128,7 +128,7 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
      */
     private function getMetadataFromIndexForward($directory, $recursive)
     {
-        $browseIndexTree = function($path, $deep = 1) use ($directory, $recursive, &$browseIndexTree) {
+        $browseIndexTree = function ($path, $deep = 1) use ($directory, $recursive, &$browseIndexTree) {
             $subPaths = [];
             $directoryFound = false;
             foreach ($this->getInnerFileSystem()->listContents($path, false) as $content) {
@@ -144,8 +144,7 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
                                 $directoryFound = strpos($directory, $knownPath) === 0;
                             } else {
                                 $slashedDirectory = str_replace("//", "/", "$directory/");
-                                if (strpos($knownPath, $slashedDirectory) === 0)
-                                {
+                                if (strpos($knownPath, $slashedDirectory) === 0) {
                                     $directoryFound = $recursive || strrpos("/", $knownPath) == strrpos("/", $slashedDirectory);
                                 }
                             }
@@ -158,14 +157,14 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
             };
             if ($directoryFound || $deep == 1) {
                 foreach ($subPaths as $subPath) {
-                    foreach($browseIndexTree($subPath, $deep + 1) as $index) {
+                    foreach ($browseIndexTree($subPath, $deep + 1) as $index) {
                         yield $index;
                     }
                 }
             }
         };
 
-        foreach($browseIndexTree(self::PATH_TO_INDEXES) as $index) {
+        foreach ($browseIndexTree(self::PATH_TO_INDEXES) as $index) {
             foreach ($index[self::INDEX_FILE__DATA] as $path => $unused) {
                 $metadata = $this->getOuterFileSystem()->getMetadata($path);
                 if (!$recursive && $metadata["dirname"] != $directory) {
@@ -217,13 +216,23 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
     }
 
     /**
+     * @param string $path
+     * @param int $countOfIndexes
+     * @param int $index
+     * @return string
+     */
+    private function getIndexKey($path, $countOfIndexes, $index)
+    {
+        return substr($path, 0, $index == 0 ? strlen($path) : ($countOfIndexes - $index) * 4);
+    }
+
+    /**
      * @inheritdoc
      */
     public function addPathToIndex($path, $innerPath)
     {
         $indexes = $this->getPathsToIndexFiles($innerPath);
         $countOfIndexes = count($indexes);
-        $blockSize = 4;
 
         for ($i = 0; $i < $countOfIndexes; $i++) {
             $index = $this->readIndex($indexes[$i]);
@@ -231,8 +240,9 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
             if (!$indexData) {
                 $indexData = [];
             }
-            $blockData = &$indexData[substr($path, 0, $i == 0 ? strlen($path) : ($countOfIndexes - $i) * $blockSize)];
-            $blockData++;
+            $indexKey = $this->getIndexKey($path, $countOfIndexes, $i);
+            $key = &$indexData[$indexKey];
+            $key++;
             $this->writeIndex($indexes[$i], $index);
         }
     }
@@ -244,7 +254,6 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
     {
         $indexes = $this->getPathsToIndexFiles($innerPath);
         $countOfIndexes = count($indexes);
-        $keyBlockSize = 4;
 
         for ($i = 0; $i < $countOfIndexes; $i++) {
             $index = $this->readIndex($indexes[$i]);
@@ -252,11 +261,11 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
             if (!$indexData) {
                 $indexData = [];
             }
-            $keyBlock = substr($path, 0, $i == 0 ? strlen($path) : ($countOfIndexes - $i) * $keyBlockSize);
-            $key = &$indexData[$keyBlock];
+            $indexKey = $this->getIndexKey($path, $countOfIndexes, $i);
+            $key = &$indexData[$indexKey];
             $key--;
             if ($key <= 0) {
-                unset($indexData[$keyBlock]);
+                unset($indexData[$indexKey]);
             }
             $this->writeIndex($indexes[$i], $index);
         }

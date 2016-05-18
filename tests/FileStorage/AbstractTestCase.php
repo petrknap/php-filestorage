@@ -52,7 +52,7 @@ abstract class AbstractTestCase extends \PHPUnit_Framework_TestCase
 
     private static function removeDirectory($directory)
     {
-        $removeDirectoryRecursively = function($directory) use (&$removeDirectoryRecursively) {
+        $removeDirectoryRecursively = function ($directory) use (&$removeDirectoryRecursively) {
             chmod($directory, 0777);
             $directoryIterator = new \DirectoryIterator($directory);
             $itemIterator = new \IteratorIterator($directoryIterator);

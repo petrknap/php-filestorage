@@ -17,7 +17,7 @@ class PerformanceTest extends AbstractTestCase
     public function testPerformanceIsNotIntrusive(FileSystem $fileSystem, $from, $to)
     {
         $profilerWasEnabled = SimpleProfiler::start();
-        if(!$profilerWasEnabled) {
+        if (!$profilerWasEnabled) {
             SimpleProfiler::enable();
         }
 
@@ -52,7 +52,7 @@ class PerformanceTest extends AbstractTestCase
         #region Iterate all files
         SimpleProfiler::start();
         /** @noinspection PhpUnusedLocalVariableInspection */
-        foreach($fileSystem->listContents() as $unused);
+        foreach ($fileSystem->listContents() as $unused) ;
         $profile = SimpleProfiler::finish();
         $this->assertLessThanOrEqual(5 * $to, $profile->absoluteDuration);
         #endregion
@@ -69,8 +69,7 @@ class PerformanceTest extends AbstractTestCase
         $step = 512;
         $output = [];
         $fileSystem = new FileSystem(new Local($this->getTemporaryDirectory()));
-        for ($i = 0; $i < $iMax; $i += $step)
-        {
+        for ($i = 0; $i < $iMax; $i += $step) {
             $output[] = [$fileSystem, $i, $i + $step];
         }
         return $output;

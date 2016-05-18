@@ -55,7 +55,7 @@ class IndexReadTest extends OnSiteIndexPluginTestCase
         $plugin = $this->getPlugin($adapter);
 
         $innerFileSystem->write(self::INDEX_FILE, null);
-        chmod("{$tempDir}/". self::INDEX_FILE, 0000);
+        chmod("{$tempDir}/" . self::INDEX_FILE, 0000);
         $this->setExpectedException(IndexReadException::class);
         $this->invokePrivateMethod($plugin, "readIndex", [self::INDEX_FILE]);
     }
