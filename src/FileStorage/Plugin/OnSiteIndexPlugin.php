@@ -263,7 +263,7 @@ class OnSiteIndexPlugin extends AbstractIndexPlugin
             }
             $indexKey = $this->getIndexKey($path, $countOfIndexes, $i);
             $key = &$indexData[$indexKey];
-            $key++;
+            $key--;
             if ($key <= 0) {
                 unset($indexData[$indexKey]);
             }
