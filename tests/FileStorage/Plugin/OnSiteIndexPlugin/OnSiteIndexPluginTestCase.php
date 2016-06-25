@@ -1,6 +1,6 @@
 <?php
 
-namespace PetrKnap\Php\FileStorage\Test\Plugin;
+namespace PetrKnap\Php\FileStorage\Test\Plugin\OnSiteIndexPlugin;
 
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\AdapterInterface;
