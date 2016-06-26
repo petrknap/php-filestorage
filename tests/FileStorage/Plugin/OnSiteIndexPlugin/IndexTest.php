@@ -3,7 +3,6 @@
 namespace PetrKnap\Php\FileStorage\Test\Plugin\OnSiteIndexPlugin;
 
 use PetrKnap\Php\FileStorage\Plugin\OnSiteIndexPlugin;
-use PetrKnap\Php\FileStorage\Test\Plugin\OnSiteIndexPluginTestCase;
 
 class IndexTest extends OnSiteIndexPluginTestCase
 {

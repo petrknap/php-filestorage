@@ -4,7 +4,6 @@ namespace PetrKnap\Php\FileStorage\Test\Plugin\OnSiteIndexPlugin;
 
 use PetrKnap\Php\FileStorage\Plugin\Exception\IndexWriteException;
 use PetrKnap\Php\FileStorage\Plugin\OnSiteIndexPlugin;
-use PetrKnap\Php\FileStorage\Test\Plugin\OnSiteIndexPluginTestCase;
 
 class IndexWriteTest extends OnSiteIndexPluginTestCase
 {

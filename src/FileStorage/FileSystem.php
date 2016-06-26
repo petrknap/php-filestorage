@@ -4,10 +4,13 @@ namespace PetrKnap\Php\FileStorage;
 
 use League\Flysystem\AdapterInterface;
 use League\Flysystem\Config;
+use League\Flysystem\FileExistsException;
+use League\Flysystem\FileNotFoundException;
 use League\Flysystem\Filesystem as FlyFileSystem;
 use League\Flysystem\FilesystemInterface;
 use League\Flysystem\Handler;
 use League\Flysystem\Plugin\PluggableTrait;
+use League\Flysystem\RootViolationException;
 use Nunzion\Expect;
 use PetrKnap\Php\FileStorage\Plugin\OnSiteIndexPlugin;
 
@@ -84,7 +87,11 @@ class FileSystem implements FilesystemInterface
      */
     public function read($path)
     {
-        return $this->fileSystem->read($this->getInnerPath($path));
+        try {
+            return $this->fileSystem->read($this->getInnerPath($path));
+        } catch(FileNotFoundException $e) {
+            throw $this->exceptionWrapper($e, $path);
+        }
     }
 
     /**
@@ -92,7 +99,11 @@ class FileSystem implements FilesystemInterface
      */
     public function readStream($path)
     {
-        return $this->fileSystem->readStream($this->getInnerPath($path));
+        try {
+            return $this->fileSystem->readStream($this->getInnerPath($path));
+        } catch(FileNotFoundException $e) {
+            throw $this->exceptionWrapper($e, $path);
+        }
     }
 
     /**
@@ -108,7 +119,11 @@ class FileSystem implements FilesystemInterface
      */
     public function getMetadata($path)
     {
-        $return = $this->fileSystem->getMetadata($this->getInnerPath($path));
+        try {
+            $return = $this->fileSystem->getMetadata($this->getInnerPath($path));
+        } catch(FileNotFoundException $e) {
+            throw $this->exceptionWrapper($e, $path);
+        }
 
         if ($return !== false) {
             $return = array_merge($return, pathinfo($path), ["path" => $path]);
@@ -130,7 +145,11 @@ class FileSystem implements FilesystemInterface
      */
     public function getMimetype($path)
     {
-        return $this->fileSystem->getMimetype($this->getInnerPath($path));
+        try {
+            return $this->fileSystem->getMimetype($this->getInnerPath($path));
+        } catch(FileNotFoundException $e) {
+            throw $this->exceptionWrapper($e, $path);
+        }
     }
 
     /**
@@ -138,7 +157,11 @@ class FileSystem implements FilesystemInterface
      */
     public function getTimestamp($path)
     {
-        return $this->fileSystem->getTimestamp($this->getInnerPath($path));
+        try {
+            return $this->fileSystem->getTimestamp($this->getInnerPath($path));
+        } catch(FileNotFoundException $e) {
+            throw $this->exceptionWrapper($e, $path);
+        }
     }
 
     /**
@@ -146,7 +169,11 @@ class FileSystem implements FilesystemInterface
      */
     public function getVisibility($path)
     {
-        return $this->fileSystem->getVisibility($this->getInnerPath($path));
+        try {
+            return $this->fileSystem->getVisibility($this->getInnerPath($path));
+        } catch(FileNotFoundException $e) {
+            throw $this->exceptionWrapper($e, $path);
+        }
     }
 
     /**
@@ -156,7 +183,11 @@ class FileSystem implements FilesystemInterface
     {
         $innerPath = $this->getInnerPath($path);
 
-        $return = $this->fileSystem->write($innerPath, $contents, $config);
+        try {
+            $return = $this->fileSystem->write($innerPath, $contents, $config);
+        } catch(FileExistsException $e) {
+            throw $this->exceptionWrapper($e, $path);
+        }
 
         if ($return !== false) {
             $this->invokePlugin("addPathToIndex", [$path, $innerPath], $this);
@@ -172,7 +203,11 @@ class FileSystem implements FilesystemInterface
     {
         $innerPath = $this->getInnerPath($path);
 
-        $return = $this->fileSystem->writeStream($innerPath, $resource, $config);
+        try {
+            $return = $this->fileSystem->writeStream($innerPath, $resource, $config);
+        } catch(FileExistsException $e) {
+            throw $this->exceptionWrapper($e, $path);
+        }
 
         if ($return !== false) {
             $this->invokePlugin("addPathToIndex", [$path, $innerPath], $this);
@@ -186,7 +221,11 @@ class FileSystem implements FilesystemInterface
      */
     public function update($path, $contents, array $config = [])
     {
-        return $this->fileSystem->update($this->getInnerPath($path), $contents, $config);
+        try {
+            return $this->fileSystem->update($this->getInnerPath($path), $contents, $config);
+        } catch(FileNotFoundException $e) {
+            throw $this->exceptionWrapper($e, $path);
+        }
     }
 
     /**
@@ -194,7 +233,11 @@ class FileSystem implements FilesystemInterface
      */
     public function updateStream($path, $resource, array $config = [])
     {
-        return $this->fileSystem->updateStream($this->getInnerPath($path), $resource, $config);
+        try {
+            return $this->fileSystem->updateStream($this->getInnerPath($path), $resource, $config);
+        } catch(FileNotFoundException $e) {
+            throw $this->exceptionWrapper($e, $path);
+        }
     }
 
     /**
@@ -205,7 +248,13 @@ class FileSystem implements FilesystemInterface
         $innerPath = $this->getInnerPath($path);
         $newInnerPath = $this->getInnerPath($newPath);
 
-        $return = $this->fileSystem->rename($innerPath, $newInnerPath);
+        try {
+            $return = $this->fileSystem->rename($innerPath, $newInnerPath);
+        } catch(FileNotFoundException $e) {
+            throw $this->exceptionWrapper($e, $path);
+        } catch(FileExistsException $e) {
+            throw $this->exceptionWrapper($e, $path);
+        }
 
         if ($return !== false) {
             $this->invokePlugin("addPathToIndex", [$newPath, $newInnerPath], $this);
@@ -223,7 +272,13 @@ class FileSystem implements FilesystemInterface
         $innerPath = $this->getInnerPath($path);
         $newInnerPath = $this->getInnerPath($newPath);
 
-        $return = $this->fileSystem->copy($innerPath, $newInnerPath);
+        try {
+            $return = $this->fileSystem->copy($innerPath, $newInnerPath);
+        } catch(FileNotFoundException $e) {
+            throw $this->exceptionWrapper($e, $path);
+        } catch(FileExistsException $e) {
+            throw $this->exceptionWrapper($e, $path);
+        }
 
         if ($return !== false) {
             $this->invokePlugin("addPathToIndex", [$newPath, $newInnerPath], $this);
@@ -237,7 +292,11 @@ class FileSystem implements FilesystemInterface
      */
     public function delete($path)
     {
-        $innerPath = $this->getInnerPath($path);
+        try {
+            $innerPath = $this->getInnerPath($path);
+        } catch(FileNotFoundException $e) {
+            throw $this->exceptionWrapper($e, $path);
+        }
 
         $return = $this->fileSystem->delete($innerPath);
 
@@ -255,7 +314,11 @@ class FileSystem implements FilesystemInterface
     {
         $innerDirname = $this->getInnerPath($dirname);
 
-        $return = $this->fileSystem->deleteDir($innerDirname);
+        try {
+            $return = $this->fileSystem->deleteDir($innerDirname);
+        } catch(RootViolationException $e) {
+            throw $this->exceptionWrapper($e, $dirname);
+        }
 
         if ($return !== false) {
             $this->invokePlugin("removePathFromIndex", [$dirname, $innerDirname], $this);
@@ -329,7 +392,11 @@ class FileSystem implements FilesystemInterface
     {
         $innerPath = $this->getInnerPath($path);
 
-        $return = $this->fileSystem->readAndDelete($innerPath);
+        try {
+            $return = $this->fileSystem->readAndDelete($innerPath);
+        } catch(FileNotFoundException $e) {
+            throw $this->exceptionWrapper($e, $path);
+        }
 
         if ($return !== false) {
             $this->invokePlugin("removePathFromIndex", [$path, $innerPath], $this);
@@ -344,5 +411,17 @@ class FileSystem implements FilesystemInterface
     public function get($path, Handler $handler = null)
     {
         return $this->fileSystem->get($this->getInnerPath($path), $handler);
+    }
+
+    /**
+     * @param \Exception $exception
+     * @param string $path
+     * @return \Exception
+     */
+    private function exceptionWrapper(\Exception $exception, $path)
+    {
+        $message = str_replace(substr($this->getInnerPath($path), 1), $path, $exception->getMessage());
+        $exceptionClass = get_class($exception);
+        return new $exceptionClass($message, $exception->getCode(), $exception);
     }
 }
