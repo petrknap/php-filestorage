@@ -19,11 +19,6 @@ abstract class AbstractIndexPluginTest extends AbstractTestCase
     abstract protected function getFileSystemWithIndexPlugin($directory);
 
     /**
-     * @var string
-     */
-    private $tempDir;
-
-    /**
      * @var FileSystem
      */
     private $fileSystem;
@@ -31,8 +26,7 @@ abstract class AbstractIndexPluginTest extends AbstractTestCase
     public function setUp()
     {
         parent::setUp();
-        $this->tempDir = $this->getTemporaryDirectory();
-        $this->fileSystem = $this->getFileSystemWithIndexPlugin($this->tempDir);
+        $this->fileSystem = $this->getFileSystemWithIndexPlugin($this->getTemporaryDirectory());
     }
 
     /**
@@ -73,31 +67,31 @@ abstract class AbstractIndexPluginTest extends AbstractTestCase
 
     /**
      * @dataProvider dataGetMetadataFromIndexWorks
-     * @param FileSystem $fileSystem
+     * @param array $files
      * @param string $directory
      * @param bool $recursive
      * @param array $expected
      */
-    public function testGetMetadataFromIndexWorks($fileSystem, $directory, $recursive, $expected)
+    public function testGetMetadataFromIndexWorks($files, $directory, $recursive, $expected)
     {
+        foreach ($files as $file) {
+            $this->fileSystem->write($file, null);
+        }
         $this->assertArrayEquals($expected, array_map(function ($v) {
             return $v["path"];
-        }, $fileSystem->listContents($directory, $recursive)));
+        }, $this->fileSystem->listContents($directory, $recursive)));
     }
 
     public function dataGetMetadataFromIndexWorks()
     {
-        $fileSystem = $this->getFileSystemWithIndexPlugin($this->getTemporaryDirectory());
-        foreach ($this->dataPaths() as $path) {
-            $fileSystem->write($path[0], null);
-        }
+        $files = ["/file.ext", "/dir/file.ext", "/dir/sub-dir/file.ext"];
         return [
-            [$fileSystem, "/", true, ["/file.ext", "/dir/file.ext", "/dir/sub-dir/file.ext"]],
-            [$fileSystem, "/", false, ["/file.ext"]],
-            [$fileSystem, "/dir", true, ["/dir/file.ext", "/dir/sub-dir/file.ext"]],
-            [$fileSystem, "/dir", false, ["/dir/file.ext"]],
-            [$fileSystem, "/dir/sub-dir", true, ["/dir/sub-dir/file.ext"]],
-            [$fileSystem, "/dir/sub-dir", false, ["/dir/sub-dir/file.ext"]]
+            [$files, "/", true, ["/file.ext", "/dir/file.ext", "/dir/sub-dir/file.ext"]],
+            [$files, "/", false, ["/file.ext"]],
+            [$files, "/dir", true, ["/dir/file.ext", "/dir/sub-dir/file.ext"]],
+            [$files, "/dir", false, ["/dir/file.ext"]],
+            [$files, "/dir/sub-dir", true, ["/dir/sub-dir/file.ext"]],
+            [$files, "/dir/sub-dir", false, ["/dir/sub-dir/file.ext"]]
         ];
     }
 
