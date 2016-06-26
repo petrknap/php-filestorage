@@ -1,6 +1,6 @@
 <?php
 
-namespace PetrKnap\Php\FileStorage\Test;
+namespace PetrKnap\Php\FileStorage\Test\Plugin;
 
 use League\Flysystem\Adapter\Local;
 use PetrKnap\Php\FileStorage\FileSystem;

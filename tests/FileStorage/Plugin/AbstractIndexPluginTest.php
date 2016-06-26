@@ -1,8 +1,9 @@
 <?php
 
-namespace PetrKnap\Php\FileStorage\Test;
+namespace PetrKnap\Php\FileStorage\Test\Plugin;
 
 use PetrKnap\Php\FileStorage\FileSystem;
+use PetrKnap\Php\FileStorage\Test\AbstractTestCase;
 
 abstract class AbstractIndexPluginTest extends AbstractTestCase
 {
