@@ -45,8 +45,10 @@ If you wish to store 1 000 000 files in single directory, this file storage conv
 ```php
 use League\Flysystem\Adapter\Local as LocalAdapter;
 use PetrKnap\Php\FileStorage\FileSystem;
+use PetrKnap\Php\FileStorage\Plugin\SQLiteIndexPlugin;
 
 $fileSystem = new FileSystem(new LocalAdapter(__DIR__ . "/temp"));
+SQLiteIndexPlugin::register($fileSystem, __DIR__ . "/temp/index.sqlite"); // optional
 
 $fileSystem->write("/file.txt", null);
 $fileSystem->update("/file.txt", "Hello World!");
