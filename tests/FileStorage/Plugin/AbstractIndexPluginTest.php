@@ -6,6 +6,11 @@ use PetrKnap\Php\FileStorage\FileSystem;
 
 abstract class AbstractIndexPluginTest extends AbstractTestCase
 {
+    private function assertArrayEquals($expected, $actual, $message = '', $delta = 0.0, $maxDepth = 10)
+    {
+        $this->assertEquals($expected, $actual, $message, $delta, $maxDepth, true);
+    }
+
     /**
      * @param string $directory
      * @return FileSystem
@@ -65,26 +70,42 @@ abstract class AbstractIndexPluginTest extends AbstractTestCase
         $this->assertFalse($this->indexContainsPath($path));
     }
 
-    public function testGetMetadataFromIndexWorks()
+    /**
+     * @dataProvider dataGetMetadataFromIndexWorks
+     * @param FileSystem $fileSystem
+     * @param string $directory
+     * @param bool $recursive
+     * @param array $expected
+     */
+    public function testGetMetadataFromIndexWorks($fileSystem, $directory, $recursive, $expected)
     {
-        $expected = [];
+        $this->assertArrayEquals($expected, array_map(function ($v) {
+            return $v["path"];
+        }, $fileSystem->listContents($directory, $recursive)));
+    }
+
+    public function dataGetMetadataFromIndexWorks()
+    {
+        $fileSystem = $this->getFileSystemWithIndexPlugin($this->getTemporaryDirectory());
         foreach ($this->dataPaths() as $path) {
-            $this->fileSystem->write($path[0], null);
-            $expected[] = $path[0];
+            $fileSystem->write($path[0], null);
         }
-
-        $actual = [];
-        foreach ($this->fileSystem->listContents("/", true) as $content) {
-            $actual[] = $content["path"];
-        }
-
-        $this->assertEquals($expected, $actual, "", 0, 0, true);
+        return [
+            [$fileSystem, "/", true, ["/file.ext", "/dir/file.ext", "/dir/sub-dir/file.ext"]],
+            [$fileSystem, "/", false, ["/file.ext"]],
+            [$fileSystem, "/dir", true, ["/dir/file.ext", "/dir/sub-dir/file.ext"]],
+            [$fileSystem, "/dir", false, ["/dir/file.ext"]],
+            [$fileSystem, "/dir/sub-dir", true, ["/dir/sub-dir/file.ext"]],
+            [$fileSystem, "/dir/sub-dir", false, ["/dir/sub-dir/file.ext"]]
+        ];
     }
 
     public function dataPaths()
     {
-        foreach (["/file.ext", "/dir/file.ext", "/dir/sub-dir/file.ext"] as $path) {
-            yield [$path];
-        }
+        return [
+            ["/file.ext"],
+            ["/dir/file.ext"],
+            ["/dir/sub-dir/file.ext"]
+        ];
     }
 }
