@@ -19,15 +19,15 @@ class SQLiteIndexPlugin extends AbstractIndexPlugin
 {
     const /** @noinspection SqlDialectInspection */
         /** @noinspection SqlNoDataSourceInspection */
-        INSERT = "INSERT INTO t (path) VALUES (:path)";
+        INSERT = "INSERT INTO file_storage_index (path, inner_path) VALUES (:path, :inner_path)";
 
     const /** @noinspection SqlDialectInspection */
         /** @noinspection SqlNoDataSourceInspection */
-        SELECT = "SELECT path FROM t WHERE path LIKE :path";
+        SELECT = "SELECT path, inner_path FROM file_storage_index WHERE path LIKE :path";
 
     const /** @noinspection SqlDialectInspection */
         /** @noinspection SqlNoDataSourceInspection */
-        DELETE = "DELETE FROM t WHERE path = :path";
+        DELETE = "DELETE FROM file_storage_index WHERE path = :path";
 
     /**
      * @param FilesystemInterface $outerFileSystem
@@ -91,7 +91,7 @@ class SQLiteIndexPlugin extends AbstractIndexPlugin
             throw $this->writeExceptionFactory("Could not add path to index");
         }
 
-        if ($statement->execute(["path" => $path]) === false) {
+        if ($statement->execute(["path" => $path, "inner_path" => $innerPath]) === false) {
             throw $this->writeExceptionFactory("Could not add path to index");
         }
     }
