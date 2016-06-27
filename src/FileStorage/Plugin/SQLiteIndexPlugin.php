@@ -4,6 +4,7 @@ namespace PetrKnap\Php\FileStorage\Plugin;
 
 use League\Flysystem\FilesystemInterface;
 use Nunzion\Expect;
+use PetrKnap\Php\FileStorage\MigrationTool\PDOMigrationTool;
 use PetrKnap\Php\FileStorage\Plugin\Exception\IndexReadException;
 use PetrKnap\Php\FileStorage\Plugin\Exception\IndexWriteException;
 
@@ -16,9 +17,6 @@ use PetrKnap\Php\FileStorage\Plugin\Exception\IndexWriteException;
  */
 class SQLiteIndexPlugin extends AbstractIndexPlugin
 {
-    const /** @noinspection SqlNoDataSourceInspection */
-        CREATE = "CREATE TABLE IF NOT EXISTS t (path TEXT NOT NULL UNIQUE)";
-
     const /** @noinspection SqlDialectInspection */
         /** @noinspection SqlNoDataSourceInspection */
         INSERT = "INSERT INTO t (path) VALUES (:path)";
@@ -45,9 +43,10 @@ class SQLiteIndexPlugin extends AbstractIndexPlugin
     public function __construct($method, $secondArgument)
     {
         $pdo = new \PDO("sqlite:{$secondArgument}");
-        if ($pdo->exec(self::CREATE) === false) {
-            throw $this->writeExceptionFactory("Could not create table");
-        }
+
+        $migrationTool = new PDOMigrationTool($pdo);
+        $migrationTool->migrate();
+
         parent::__construct($method, $pdo);
     }
 
