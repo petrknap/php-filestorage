@@ -6,7 +6,7 @@
         "league/flysystem": "^1.0",
         "petrknap/php-migrationtool": "^1.0"
     },
-    "WARNING": "This file is updated automatically. All keys will be overwritten, except of 'description' and 'require'.",
+    "WARNING": "This file is updated automatically. All keys will be overwritten, except of 'description', 'require' and 'conflict'.",
     "name": "petrknap/php-filestorage",
     "homepage": "https://petrknap.github.io/php/filestorage.html",
     "license": "MIT",
