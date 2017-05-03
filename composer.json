@@ -8,7 +8,7 @@
     },
     "WARNING": "This file is updated automatically. All keys will be overwritten, except of 'description', 'require' and 'conflict'.",
     "name": "petrknap/php-filestorage",
-    "homepage": "https://petrknap.github.io/php/filestorage.html",
+    "homepage": "https://petrknap.github.io/docs/php-filestorage.html",
     "license": "MIT",
     "authors": [
         {
