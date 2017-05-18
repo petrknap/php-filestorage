@@ -4,7 +4,7 @@
         "php": ">=5.5",
         "nunzion/php-expect": "^1.1",
         "league/flysystem": "^1.0",
-        "petrknap/php-migrationtool": "^1.0"
+        "petrknap/php-migrationtool": "^2.0"
     },
     "WARNING": "This file is updated automatically. All keys will be overwritten, except of 'description', 'require' and 'conflict'.",
     "name": "petrknap/php-filestorage",
@@ -22,7 +22,8 @@
     "autoload": {
         "psr-4": {
             "PetrKnap\\Php\\FileStorage\\": "src"
-        }
+        },
+        "files": []
     },
     "autoload-dev": {
         "psr-4": {

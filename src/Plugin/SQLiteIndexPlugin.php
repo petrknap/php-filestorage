@@ -4,9 +4,9 @@ namespace PetrKnap\Php\FileStorage\Plugin;
 
 use League\Flysystem\FilesystemInterface;
 use Nunzion\Expect;
-use PetrKnap\Php\FileStorage\MigrationTool\PDOMigrationTool;
 use PetrKnap\Php\FileStorage\Plugin\Exception\IndexReadException;
 use PetrKnap\Php\FileStorage\Plugin\Exception\IndexWriteException;
+use PetrKnap\Php\MigrationTool\SqlMigrationTool;
 
 /**
  * @author   Petr Knap <dev@petrknap.cz>
@@ -44,8 +44,8 @@ class SQLiteIndexPlugin extends AbstractIndexPlugin
     {
         $pdo = new \PDO("sqlite:{$secondArgument}");
 
-        $migrationTool = new PDOMigrationTool($pdo);
-        $migrationTool->migrate();
+        $migrationTool = new SqlMigrationTool(__DIR__ . "/../../migrations", $pdo);
+        @$migrationTool->migrate();
 
         parent::__construct($method, $pdo);
     }
